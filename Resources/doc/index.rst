@@ -22,9 +22,25 @@ This bundle is not yet finished.
 Configuration
 -------------
 
-Config::
+To use the default object route controller, add this at the end of routing.yml::
 
-    TBD
+    NercuryObjectRouterBundle:
+    resource: "@ObjectRouterBundle/Controller/"
+    type:     annotation
+    prefix:   /
+
+It defines the last route rule as object route:
+    
+    /{slug}
+
+Additionally, paging route is also defined:
+
+    /{slug}/page-{page}
+
+It redirects the {page} parameter to the actual controller and action which receives:
+    
+    'id'  => $resolved_object_id,
+    'page' => $page,
 
 Usage
 -----
