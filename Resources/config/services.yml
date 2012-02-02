@@ -1,0 +1,8 @@
+parameters:
+    object_router.class: Nercury\ObjectRouterBundle\ObjectRouterService
+    object_router.configuration: ~
+
+services:
+    object_router:
+        class: %object_router.class%
+        arguments: [ "@logger", "@doctrine" ]
