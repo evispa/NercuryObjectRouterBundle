@@ -45,6 +45,13 @@ class ObjectRouterService {
     }
 
     /**
+     * @return \Doctrine\ORM\EntityManager
+     */
+    private function getEntityManager() {
+        return $this->doctrine->getEntityManager();
+    }
+    
+    /**
      * Get cache is which is used for resolve object method to cache results.
      * 
      * @param string $language
@@ -53,6 +60,19 @@ class ObjectRouterService {
      */
     public function getResolveObjectCacheId($language, $slug) {
         return 'rt_' . $slug . $language . '_obj_resolve';
+    }
+    
+    /**
+     * Get cache is which is used for resolve object method to cache results.
+     * 
+     * @param int $objectId
+     * @param string $objectType
+     * @param string $language
+     * @param boolean $only_visible 
+     * @return string 
+     */
+    public function getGetSlugCacheId($objectId, $objectType, $language, $only_visible) {
+        return 'rt_' . $objectId . $objectType . $language . ($only_visible ? 1 : 0) . '_obj_resolve';
     }
 
     /**
@@ -67,6 +87,21 @@ class ObjectRouterService {
         if ($cache_impl)
             $cache_impl->delete($this->getResolveObjectCacheId($language, $slug));
     }
+    
+    /**
+     * Clear get slug cache for specific object.
+     * 
+     * @param int $objectId
+     * @param string $objectType
+     * @param string $language
+     * @param boolean $only_visible 
+     */
+    public function clearGetSlugCache($objectId, $objectType, $language, $only_visible) {
+        $em = $this->doctrine->getEntityManager();
+        $cache_impl = $em->getConfiguration()->getResultCacheImpl();
+        if ($cache_impl)
+            $cache_impl->delete($this->getGetSlugCacheId($objectId, $objectType, $language, $only_visible));
+    }
 
     /**
      * Get object id and type based on language and slug
@@ -77,7 +112,7 @@ class ObjectRouterService {
      */
     public function resolveObject($language, $slug) {
         $this->logger->info('resolve object slug ' . $slug . ' in ' . $language . ' language...');
-        $em = $this->doctrine->getEntityManager();
+        $em = $this->getEntityManager();
 
         //$this->clearResolveObjectCache($language, $slug);
         
@@ -109,7 +144,38 @@ class ObjectRouterService {
      * @param string $slug Object slug
      */
     public function setSlug($objectId, $objectType, $language, $slug) {
+        $this->logger->info('set slug to ' . $slug . ' for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
+        $em = $this->getEntityManager();
+        $q = $em->createQueryBuilder()
+                ->from('ObjectRouterBundle:ObjectRoute', 'r')
+                ->andWhere('r.lng = ?1')
+                ->andWhere('r.object_id = ?2')
+                ->andWhere('r.object_type = ?3')
+                ->select('r')
+                ->setParameter(1, $language)
+                ->setParameter(2, $objectId)
+                ->setParameter(3, $objectType)
+                ->setMaxResults(1)
+                ->getQuery();
         
+        $res = $q->getResult();
+        
+        if (empty($res)) {
+            $route = new Entity\ObjectRoute();
+            $route->setLng($language);
+            $route->setObjectId($objectId);
+            $route->setObjectType($objectType);
+            $route->setVisible(0);
+            $em->persist($route);
+        } else {
+            $route = $res[0];
+        }
+        
+        $route->setSlug($slug);
+        
+        $em->flush();
+        
+        $this->clearResolveObjectCache($language, $slug);
     }
 
     /**
@@ -118,10 +184,38 @@ class ObjectRouterService {
      * @param integer $objectId Id of the object
      * @param string $objectType Object type string
      * @param string $language Language for slug
+     * @param boolean $only_visible Return FALSE if route is not visible
      * @return string Object slug
      */
-    public function getSlug($objectId, $objectType, $language) {
+    public function getSlug($objectId, $objectType, $language, $only_visible = true) {
+        $this->logger->info('get slug for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
+        $em = $this->getEntityManager();
+
+        //$this->clearResolveObjectCache($language, $slug);
         
+        $qb = $em->createQueryBuilder()
+                ->from('ObjectRouterBundle:ObjectRoute', 'r')
+                ->andWhere('r.lng = ?1')
+                ->andWhere('r.object_id = ?2')
+                ->andWhere('r.object_type = ?3')
+                ->select('r.slug')
+                ->setParameter(1, $language)
+                ->setParameter(2, $objectId)
+                ->setParameter(3, $objectType)
+                ->setMaxResults(1);
+        
+        if ($only_visible)
+            $qb->andWhere('r.visible = 1');
+        
+        $q = $qb->getQuery();
+
+        $q->useResultCache(true, 300, $this->getResolveObjectCacheId($language, $slug));
+        $res = $q->getArrayResult();
+
+        if (empty($res))
+            return FALSE;
+        
+        return $res[0]['slug'];
     }
 
     /**
