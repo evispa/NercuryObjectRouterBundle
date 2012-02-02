@@ -114,8 +114,6 @@ class ObjectRouterService {
         $this->logger->info('resolve object slug ' . $slug . ' in ' . $language . ' language...');
         $em = $this->getEntityManager();
 
-        //$this->clearResolveObjectCache($language, $slug);
-        
         $q = $em->createQueryBuilder()
                 ->from('ObjectRouterBundle:ObjectRoute', 'r')
                 ->andWhere('r.lng = ?1')
@@ -175,6 +173,8 @@ class ObjectRouterService {
         
         $em->flush();
         
+        $this->clearGetSlugCache($objectId, $objectType, $language, true);
+        $this->clearGetSlugCache($objectId, $objectType, $language, false);
         $this->clearResolveObjectCache($language, $slug);
     }
 
@@ -185,14 +185,12 @@ class ObjectRouterService {
      * @param string $objectType Object type string
      * @param string $language Language for slug
      * @param boolean $only_visible Return FALSE if route is not visible
-     * @return string Object slug
+     * @return string Object slug (returns FALSE if object slug was not found)
      */
     public function getSlug($objectId, $objectType, $language, $only_visible = true) {
         $this->logger->info('get slug for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
         $em = $this->getEntityManager();
 
-        //$this->clearResolveObjectCache($language, $slug);
-        
         $qb = $em->createQueryBuilder()
                 ->from('ObjectRouterBundle:ObjectRoute', 'r')
                 ->andWhere('r.lng = ?1')
@@ -209,7 +207,7 @@ class ObjectRouterService {
         
         $q = $qb->getQuery();
 
-        $q->useResultCache(true, 300, $this->getResolveObjectCacheId($language, $slug));
+        $q->useResultCache(true, 300, $this->getGetSlugCacheId($objectId, $objectType, $language, $only_visible));
         $res = $q->getArrayResult();
 
         if (empty($res))
@@ -226,7 +224,30 @@ class ObjectRouterService {
      * @return boolean TRUE if something was deleted, otherwise FALSE
      */
     public function deleteSlugs($objectId, $objectType) {
+        $this->logger->info('delete slugs for object id '.$objectId.' of type '.$objectType.' in all languages...');
+        $em = $this->getEntityManager();
         
+        $qb = $em->createQueryBuilder()
+                ->from('ObjectRouterBundle:ObjectRoute', 'r')
+                ->andWhere('r.object_id = ?1')
+                ->andWhere('r.object_type = ?2')
+                ->select('r')
+                ->setParameter(1, $objectId)
+                ->setParameter(2, $objectType);
+        
+        $q = $qb->getQuery();
+        $results = $q->getResult();
+        if (empty($results))
+            return FALSE;
+        
+        foreach ($results as $route) {
+            $em->remove($route);
+            $this->clearResolveObjectCache($route->getLng(), $route->getSlug());
+            $this->clearGetSlugCache($objectId, $objectType, $route->getLng(), true);
+            $this->clearGetSlugCache($objectId, $objectType, $route->getLng(), false);
+        }
+        
+        $em->flush();
     }
 
     /**
@@ -235,10 +256,20 @@ class ObjectRouterService {
      * @param integer $objectId Id of the object
      * @param string $objectType Object type string
      * @param string $language Language for slug
-     * @return boolean TRUE if something was deleted, otherwise FALSE
      */
     public function deleteSlug($objectId, $objectType, $language) {
+        $slug = $this->getSlug($objectId, $objectType, $language, false);
         
+        $em = $this->getEntityManager();
+        $q = $em->createQuery('DELETE from ObjectRouterBundle:ObjectRoute r WHERE r.object_id = ?1 AND r.object_type = ?2 AND r.lng = ?3');
+        $q->setParameter(1, $objectId);
+        $q->setParameter(2, $objectType);
+        $q->setParameter(3, $language);
+        $q->execute();
+        
+        $this->clearResolveObjectCache($language, $slug);
+        $this->clearGetSlugCache($objectId, $objectType, $language, true);
+        $this->clearGetSlugCache($objectId, $objectType, $language, false);
     }
 
 }
