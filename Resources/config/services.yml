@@ -5,4 +5,5 @@ parameters:
 services:
     object_router:
         class: %object_router.class%
-        arguments: [ "@logger", "@doctrine" ]
+        arguments: [ %object_router.configuration%, "@logger", "@doctrine" ]
+        

@@ -26,6 +26,13 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class LoadController extends Controller
 {
     /**
+     * @return type 
+     */
+    private function getObjectRouter() {
+        return $this->get('object_router');
+    }
+    
+    /**
      * @Route("/{slug}/page-{page}", requirements={"page" = "\d+"})
      */
     public function object_with_pageAction($slug, $page)
@@ -57,6 +64,8 @@ class LoadController extends Controller
      */
     public function objectAction($slug)
     {        
+        die('b');
+        
         $response = $this->forward('CmsBundle:Load:test', array(
             'id'  => $slug,
         ));

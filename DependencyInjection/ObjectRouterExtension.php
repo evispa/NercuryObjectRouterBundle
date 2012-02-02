@@ -25,6 +25,6 @@ class ObjectRouterExtension extends Extension
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
         
-        $container->setParameter('crons.configuration', $config);
+        $container->setParameter('object_router.configuration', $config);
     }
 }

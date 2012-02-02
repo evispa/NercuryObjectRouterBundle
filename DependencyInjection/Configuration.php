@@ -40,6 +40,16 @@ class Configuration implements ConfigurationInterface
         // configure your bundle. See the documentation linked above for
         // more information on that topic.
 
+        $rootNode->children()
+            ->arrayNode('controllers')
+                ->defaultValue(array())
+                ->useAttributeAsKey('id')
+                ->prototype('scalar')
+                    ->isRequired()->end()
+                ->end()
+            ->end()
+        ->end();
+        
         return $treeBuilder;
     }
 }

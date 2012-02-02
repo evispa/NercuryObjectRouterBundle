@@ -39,7 +39,11 @@ class ObjectRouterService {
      */
     private $doctrine;
 
-    public function __construct(Logger $logger, Registry $doctrine) {
+    private $configuration;
+    
+    public function __construct($configuration, Logger $logger, Registry $doctrine) {
+        $this->configuration = $configuration;
+        var_dump($configuration); die;
         $this->logger = $logger;
         $this->doctrine = $doctrine;
     }
