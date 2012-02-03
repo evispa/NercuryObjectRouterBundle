@@ -51,15 +51,15 @@ To assign a route slug to some object, use::
 
 Url should be routed to the product action when accessing the page over::
 
-/test-route
+    /test-route
 
-You can get url of the product by calling:
+You can get url of the product by calling::
 
-$this->get('object_router')->generateUrl('product', $id); // get url in current locale
+    $this->get('object_router')->generateUrl('product', $id); // get url in current locale
 
-Localle can be specified as an additional parameter:
+Localle can be specified as an additional parameter::
 
-$this->get('object_router')->generateUrl('product', $id, $locale);
+    $this->get('object_router')->generateUrl('product', $id, $locale);
 
 Pagination
 ----------
@@ -73,14 +73,14 @@ It redirects the {page} parameter to the actual controller and action which rece
     'id'  => $resolved_object_id,
     'page' => $page,
 
-To get an url with a page, use:
+To get an url with a page, use::
 
-$this->get('object_router')->generateUrlWithPage('product', $id, $page);
+    $this->get('object_router')->generateUrlWithPage('product', $id, $page);
 
 Custom action
 -------------
 
-Custom actions can easily be used instead of the provided two. For example, a custom action that receives additional string parameter can be defined like this::
+Custom actions can be easily used instead of the provided two. For example, a custom action that receives additional string parameter can be defined like this::
 
     /**
      * @Route("/{slug}/{custom_var}")
@@ -128,7 +128,7 @@ Custom actions can easily be used instead of the provided two. For example, a cu
         return array($action, $id);
     }
 
-Url can also be generated even to the custom action::
+Url can also be generated even for the custom action::
 
     $this->generateCustomUrl('your_bundle_controller_custom', 
         $objectType, $objectId, array('custom_var' => $custom_var));
