@@ -130,5 +130,5 @@ Custom actions can be easily used instead of the provided two. For example, a cu
 
 Url can also be generated even for the custom action::
 
-    $this->generateCustomUrl('your_bundle_controller_custom', 
+    $this->get('object_router')->generateCustomUrl('your_bundle_controller_custom', 
         $objectType, $objectId, array('custom_var' => $custom_var));
