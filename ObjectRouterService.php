@@ -20,6 +20,7 @@ namespace Nercury\ObjectRouterBundle;
 
 use \Symfony\Bridge\Monolog\Logger;
 use \Symfony\Bundle\DoctrineBundle\Registry;
+use \Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 /**
  * Used to manage object routes.
@@ -39,12 +40,26 @@ class ObjectRouterService {
      */
     private $doctrine;
 
+    /**
+     *
+     * @var \Symfony\Bundle\FrameworkBundle\Routing\Router 
+     */
+    private $router;
+    
+    /**
+     *
+     * @var \Symfony\Component\HttpFoundation\Session
+     */
+    private $session;
+    
     private $configuration;
     
-    public function __construct($configuration, Logger $logger, Registry $doctrine) {
+    public function __construct($configuration, $logger, $doctrine, $router, $session) {
         $this->configuration = $configuration;
         $this->logger = $logger;
         $this->doctrine = $doctrine;
+        $this->router = $router;
+        $this->session = $session;
     }
 
     /**
@@ -287,6 +302,67 @@ class ObjectRouterService {
         if (!isset($this->configuration['controllers'][$type]))
             return FALSE;
         return $this->configuration['controllers'][$type];
+    }
+    
+    /**
+     *
+     * @param type $objectType
+     * @param type $objectId
+     * @param type $locale
+     * @param type $absolute
+     * @return type
+     * @throws RouteNotFoundException 
+     */
+    public function generateUrl($objectType, $objectId, $locale = false, $absolute = false) {
+        if ($locale === false)
+            $locale = $this->session->getLocale();
+        
+        return $this->generateCustomUrl('nercury_objectrouter_load_object', $objectType, $objectId, array(
+            '_locale' => $locale,
+        ), $absolute);
+    }
+    
+    /**
+     *
+     * @param type $objectType
+     * @param type $objectId
+     * @param type $page
+     * @param type $locale
+     * @param type $absolute
+     * @return type 
+     */
+    public function generateUrlWithPage($objectType, $objectId, $page, $locale = false, $absolute = false) {  
+        if ($locale === false)
+            $locale = $this->session->getLocale();
+        
+        return $this->generateCustomUrl('nercury_objectrouter_load_object_with_page', $objectType, $objectId, array(
+            'page' => $page,
+            '_locale' => $locale,
+        ), $absolute);
+    }
+    
+    /**
+     * Generate object url for specified routing action with specified parameters.
+     * 
+     * @param string $route Route name
+     * @param string $objectType
+     * @param string $objectId
+     * @param string $parameters Custom route parameters
+     * @param string $absolute Generate absolute url
+     * @return string The generated URL
+     * @throws RouteNotFoundException 
+     */
+    public function generateCustomUrl($route, $objectType, $objectId, $parameters = array(), $absolute = false) {  
+        $locale = isset($parameters['_locale']) ? $parameters['_locale'] : $this->session->getLocale();
+        
+        $slug = $this->getSlug($objectId, $objectType, $locale);
+        
+        if ($slug === false)
+            throw new RouteNotFoundException('Could not find a route for object id '.$objectId.' of type '.$objectType.' in '.$locale.' locale. Maybe route is not visible?');
+        
+        $parameters['slug'] = $slug;
+        
+        return $this->router->generate($route, $parameters, $absolute);
     }
     
 }

@@ -67,6 +67,8 @@ class LoadController extends Controller
               
         $this->get('logger')->info('Forward to route to "'.$action.'" with id '.$id.', page '.$page.'...');
         
+        $router = $this->get('router');
+        
         $response = $this->forward('CmsBundle:Load:test', array(
             'id'  => $id,
             'page' => $page,
