@@ -26,10 +26,36 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class LoadController extends Controller
 {
     /**
-     * @return type 
+     * @return Nercury\ObjectRouterBundle\ObjectRouterService
      */
     private function getObjectRouter() {
         return $this->get('object_router');
+    }
+    
+    /**
+     * Helper to get action and id for slug string. Throws NotFound exceptions if slug is not found.
+     * 
+     * @param string $slug 
+     * @return array Array of [action, id]
+     */
+    private function getActionAndId($slug) {
+        $locale = $this->get('session')->getLocale();
+        $router = $this->getObjectRouter();
+        $res = $router->resolveObject($locale, $slug);
+        if ($res === false)
+            throw new NotFoundHttpException('Unable to locate a route with slug "'.$slug .'" in "'.$locale.'" locale.');
+        
+        list($id, $type, $visible) = $res;
+        
+        if (!$visible)
+            throw new NotFoundHttpException('Route with slug "'.$slug .'" in "'.$locale.'" locale is not available for viewing.');
+        
+        $action = $router->getObjectTypeAction($type);
+        
+        if ($action === false)
+            throw new NotFoundHttpException('Route with slug "'.$slug .'" in "'.$locale.'" has type "'.$type.'", but no assigned action to forward to.');
+        
+        return array($action, $id);
     }
     
     /**
@@ -37,25 +63,15 @@ class LoadController extends Controller
      */
     public function object_with_pageAction($slug, $page)
     {        
-        $locale = $this->get('session')->getLocale();
-        
-        $objectRouter = $this->get('object_router');
-        $res = $objectRouter->resolveObject($locale, $slug);
-        if ($res === FALSE)
-            throw new NotFoundHttpException('Unable to locate a route with slug "'.$slug .'" in "'.$locale.'" locale.');
-
-        list($id, $type, $visible) = $res;
-        
-        if (!$visible)
-            throw new NotFoundHttpException('Route with slug "'.$slug .'" in "'.$locale.'" locale is not available for viewing.');
+        list($action, $id) = $this->getActionAndId($slug);
+              
+        $this->get('logger')->info('Forward to route to "'.$action.'" with id '.$id.', page '.$page.'...');
         
         $response = $this->forward('CmsBundle:Load:test', array(
             'id'  => $id,
             'page' => $page,
         ));
-
-        // further modify the response or return it directly
-
+        
         return $response;
     }
     
@@ -63,14 +79,14 @@ class LoadController extends Controller
      * @Route("/{slug}")
      */
     public function objectAction($slug)
-    {        
-        die('b');
-        
-        $response = $this->forward('CmsBundle:Load:test', array(
-            'id'  => $slug,
+    {
+        list($action, $id) = $this->getActionAndId($slug);
+              
+        $this->get('logger')->info('Forward to route to "'.$action.'" with id '.$id.'...');
+                
+        $response = $this->forward($action, array(
+            'id'  => $id,
         ));
-
-        // further modify the response or return it directly
 
         return $response;
     }

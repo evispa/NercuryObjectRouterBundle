@@ -43,7 +43,6 @@ class ObjectRouterService {
     
     public function __construct($configuration, Logger $logger, Registry $doctrine) {
         $this->configuration = $configuration;
-        var_dump($configuration); die;
         $this->logger = $logger;
         $this->doctrine = $doctrine;
     }
@@ -73,7 +72,7 @@ class ObjectRouterService {
      * @param string $objectType
      * @param string $language
      * @param boolean $only_visible 
-     * @return string 
+     * @return string
      */
     public function getGetSlugCacheId($objectId, $objectType, $language, $only_visible) {
         return 'rt_' . $objectId . $objectType . $language . ($only_visible ? 1 : 0) . '_obj_resolve';
@@ -115,7 +114,7 @@ class ObjectRouterService {
      * @return array Pair of objectId and objectType: array(id, type) or FALSE on failure
      */
     public function resolveObject($language, $slug) {
-        $this->logger->info('resolve object slug ' . $slug . ' in ' . $language . ' language...');
+        $this->logger->info('Resolve object slug ' . $slug . ' in ' . $language . ' language...');
         $em = $this->getEntityManager();
 
         $q = $em->createQueryBuilder()
@@ -146,7 +145,7 @@ class ObjectRouterService {
      * @param string $slug Object slug
      */
     public function setSlug($objectId, $objectType, $language, $slug) {
-        $this->logger->info('set slug to ' . $slug . ' for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
+        $this->logger->info('Set slug to ' . $slug . ' for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
         $em = $this->getEntityManager();
         $q = $em->createQueryBuilder()
                 ->from('ObjectRouterBundle:ObjectRoute', 'r')
@@ -192,7 +191,7 @@ class ObjectRouterService {
      * @return string Object slug (returns FALSE if object slug was not found)
      */
     public function getSlug($objectId, $objectType, $language, $only_visible = true) {
-        $this->logger->info('get slug for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
+        $this->logger->info('Get slug for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
         $em = $this->getEntityManager();
 
         $qb = $em->createQueryBuilder()
@@ -228,7 +227,7 @@ class ObjectRouterService {
      * @return boolean TRUE if something was deleted, otherwise FALSE
      */
     public function deleteSlugs($objectId, $objectType) {
-        $this->logger->info('delete slugs for object id '.$objectId.' of type '.$objectType.' in all languages...');
+        $this->logger->info('Delete slugs for object id '.$objectId.' of type '.$objectType.' in all languages...');
         $em = $this->getEntityManager();
         
         $qb = $em->createQueryBuilder()
@@ -262,6 +261,8 @@ class ObjectRouterService {
      * @param string $language Language for slug
      */
     public function deleteSlug($objectId, $objectType, $language) {
+        $this->logger->info('Delete slug for object id '.$objectId.' of type '.$objectType.' in '.$language.' language...');
+        
         $slug = $this->getSlug($objectId, $objectType, $language, false);
         
         $em = $this->getEntityManager();
@@ -276,4 +277,16 @@ class ObjectRouterService {
         $this->clearGetSlugCache($objectId, $objectType, $language, false);
     }
 
+    /**
+     * Return action for specified object type string
+     * 
+     * @param string $type 
+     * @return string Return action if it exists, otherwise FALSE
+     */
+    public function getObjectTypeAction($type) {
+        if (!isset($this->configuration['controllers'][$type]))
+            return FALSE;
+        return $this->configuration['controllers'][$type];
+    }
+    
 }
