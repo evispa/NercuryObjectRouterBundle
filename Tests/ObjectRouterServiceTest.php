@@ -85,7 +85,7 @@ class ObjectRouterServiceTest extends WebTestCase
         $service = $client->getContainer()->get("object_router");
         
         $other_slug = 'other_object_slug_'.mt_rand(0, 500000);
-        $service->setSlug(184564, 'very_good_object_type', 'lt', $other_slug);
+        $service->setSlug('very_good_object_type', 184564, 'lt', $other_slug);
         
         $object = $service->resolveObject('lt', $other_slug);
         $this->assertNotEquals($object, false);
@@ -104,10 +104,10 @@ class ObjectRouterServiceTest extends WebTestCase
         $route = $this->_getTestRoute($em);
         $service = $client->getContainer()->get("object_router");
         $other_slug = 'other_object_slug_'.mt_rand(0, 500000);
-        $service->setSlug(184564, 'very_good_object_type', 'lt', $other_slug);
-        $slug = $service->getSlug(184564, 'very_good_object_type', 'lt');
+        $service->setSlug('very_good_object_type', 184564, 'lt', $other_slug);
+        $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
         $this->assertEquals($slug, $other_slug);
-        $slug = $service->getSlug(8888888, 'very_good_object_type_not_existing', 'asd');
+        $slug = $service->getSlug('very_good_object_type_not_existing', 8888888, 'asd');
         $this->assertEquals($slug, false);
         
         $em->remove($route);
@@ -121,18 +121,18 @@ class ObjectRouterServiceTest extends WebTestCase
         
         $route = $this->_getTestRoute($em);
         $service = $client->getContainer()->get("object_router");
-        $slug = $service->getSlug(184564, 'very_good_object_type', 'lt');
+        $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
         $this->assertEquals($slug, $this->test_route_slug);
-        $service->setSlug(184564, 'very_good_object_type', 'en', 'miau-aaaaaa-miau');
-        $slug = $service->getSlug(184564, 'very_good_object_type', 'en');
+        $service->setSlug('very_good_object_type', 184564, 'en', 'miau-aaaaaa-miau');
+        $slug = $service->getSlug('very_good_object_type', 184564, 'en');
         $this->assertEquals($slug, false);
         
-        $slug = $service->getSlug(184564, 'very_good_object_type', 'en', false);
+        $slug = $service->getSlug('very_good_object_type', 184564, 'en', false);
         $this->assertEquals($slug, 'miau-aaaaaa-miau');
         
-        $service->deleteSlugs(184564, 'very_good_object_type');
+        $service->deleteSlugs('very_good_object_type', 184564);
         
-        $slug = $service->getSlug(184564, 'very_good_object_type', 'lt');
+        $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
         $this->assertEquals($slug, false);
         $object = $service->resolveObject('lt', $this->test_route_slug);
         $this->assertEquals($object, false);
@@ -148,12 +148,12 @@ class ObjectRouterServiceTest extends WebTestCase
         
         $route = $this->_getTestRoute($em);
         $service = $client->getContainer()->get("object_router");
-        $slug = $service->getSlug(184564, 'very_good_object_type', 'lt');
+        $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
         $this->assertEquals($slug, $this->test_route_slug);
         
-        $service->deleteSlug(184564, 'very_good_object_type', 'lt');
+        $service->deleteSlug('very_good_object_type', 184564, 'lt');
         
-        $slug = $service->getSlug(184564, 'very_good_object_type', 'lt');
+        $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
         $this->assertEquals($slug, false);
         $object = $service->resolveObject('lt', $this->test_route_slug);
         $this->assertEquals($object, false);

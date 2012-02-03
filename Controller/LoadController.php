@@ -69,7 +69,7 @@ class LoadController extends Controller
         
         $router = $this->get('router');
         
-        $response = $this->forward('CmsBundle:Load:test', array(
+        $response = $this->forward($action, array(
             'id'  => $id,
             'page' => $page,
         ));

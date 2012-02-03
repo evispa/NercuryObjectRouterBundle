@@ -83,13 +83,13 @@ class ObjectRouterService {
     /**
      * Get cache is which is used for resolve object method to cache results.
      * 
-     * @param int $objectId
      * @param string $objectType
+     * @param int $objectId
      * @param string $language
      * @param boolean $only_visible 
      * @return string
      */
-    public function getGetSlugCacheId($objectId, $objectType, $language, $only_visible) {
+    public function getGetSlugCacheId($objectType, $objectId, $language, $only_visible) {
         return 'rt_' . $objectId . $objectType . $language . ($only_visible ? 1 : 0) . '_obj_resolve';
     }
 
@@ -109,16 +109,16 @@ class ObjectRouterService {
     /**
      * Clear get slug cache for specific object.
      * 
-     * @param int $objectId
      * @param string $objectType
+     * @param int $objectId
      * @param string $language
      * @param boolean $only_visible 
      */
-    public function clearGetSlugCache($objectId, $objectType, $language, $only_visible) {
+    public function clearGetSlugCache($objectType, $objectId, $language, $only_visible) {
         $em = $this->doctrine->getEntityManager();
         $cache_impl = $em->getConfiguration()->getResultCacheImpl();
         if ($cache_impl)
-            $cache_impl->delete($this->getGetSlugCacheId($objectId, $objectType, $language, $only_visible));
+            $cache_impl->delete($this->getGetSlugCacheId($objectType, $objectId, $language, $only_visible));
     }
 
     /**
@@ -154,12 +154,12 @@ class ObjectRouterService {
     /**
      * Set slug for specified object, type and language
      * 
-     * @param integer $objectId Id of the object
      * @param string $objectType Object type string
+     * @param integer $objectId Id of the object
      * @param string $language Language for slug
      * @param string $slug Object slug
      */
-    public function setSlug($objectId, $objectType, $language, $slug) {
+    public function setSlug($objectType, $objectId, $language, $slug) {
         $this->logger->info('Set slug to ' . $slug . ' for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
         $em = $this->getEntityManager();
         $q = $em->createQueryBuilder()
@@ -191,21 +191,21 @@ class ObjectRouterService {
         
         $em->flush();
         
-        $this->clearGetSlugCache($objectId, $objectType, $language, true);
-        $this->clearGetSlugCache($objectId, $objectType, $language, false);
+        $this->clearGetSlugCache($objectType, $objectId, $language, true);
+        $this->clearGetSlugCache($objectType, $objectId, $language, false);
         $this->clearResolveObjectCache($language, $slug);
     }
 
     /**
      * Get slug for specified object, type and language
      * 
-     * @param integer $objectId Id of the object
      * @param string $objectType Object type string
+     * @param integer $objectId Id of the object
      * @param string $language Language for slug
      * @param boolean $only_visible Return FALSE if route is not visible
      * @return string Object slug (returns FALSE if object slug was not found)
      */
-    public function getSlug($objectId, $objectType, $language, $only_visible = true) {
+    public function getSlug($objectType, $objectId, $language, $only_visible = true) {
         $this->logger->info('Get slug for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
         $em = $this->getEntityManager();
 
@@ -225,7 +225,7 @@ class ObjectRouterService {
         
         $q = $qb->getQuery();
 
-        $q->useResultCache(true, 300, $this->getGetSlugCacheId($objectId, $objectType, $language, $only_visible));
+        $q->useResultCache(true, 300, $this->getGetSlugCacheId($objectType, $objectId, $language, $only_visible));
         $res = $q->getArrayResult();
 
         if (empty($res))
@@ -237,11 +237,11 @@ class ObjectRouterService {
     /**
      * Delete all slugs for specified object
      * 
-     * @param integer $objectId Id of the object
      * @param string $objectType Object type string
+     * @param integer $objectId Id of the object
      * @return boolean TRUE if something was deleted, otherwise FALSE
      */
-    public function deleteSlugs($objectId, $objectType) {
+    public function deleteSlugs($objectType, $objectId) {
         $this->logger->info('Delete slugs for object id '.$objectId.' of type '.$objectType.' in all languages...');
         $em = $this->getEntityManager();
         
@@ -261,8 +261,8 @@ class ObjectRouterService {
         foreach ($results as $route) {
             $em->remove($route);
             $this->clearResolveObjectCache($route->getLng(), $route->getSlug());
-            $this->clearGetSlugCache($objectId, $objectType, $route->getLng(), true);
-            $this->clearGetSlugCache($objectId, $objectType, $route->getLng(), false);
+            $this->clearGetSlugCache($objectType, $objectId, $route->getLng(), true);
+            $this->clearGetSlugCache($objectType, $objectId, $route->getLng(), false);
         }
         
         $em->flush();
@@ -271,14 +271,14 @@ class ObjectRouterService {
     /**
      * Delete slug in single language for specified object
      * 
-     * @param integer $objectId Id of the object
      * @param string $objectType Object type string
+     * @param integer $objectId Id of the object
      * @param string $language Language for slug
      */
-    public function deleteSlug($objectId, $objectType, $language) {
+    public function deleteSlug($objectType, $objectId, $language) {
         $this->logger->info('Delete slug for object id '.$objectId.' of type '.$objectType.' in '.$language.' language...');
         
-        $slug = $this->getSlug($objectId, $objectType, $language, false);
+        $slug = $this->getSlug($objectType, $objectId, $language, false);
         
         $em = $this->getEntityManager();
         $q = $em->createQuery('DELETE from ObjectRouterBundle:ObjectRoute r WHERE r.object_id = ?1 AND r.object_type = ?2 AND r.lng = ?3');
@@ -288,8 +288,8 @@ class ObjectRouterService {
         $q->execute();
         
         $this->clearResolveObjectCache($language, $slug);
-        $this->clearGetSlugCache($objectId, $objectType, $language, true);
-        $this->clearGetSlugCache($objectId, $objectType, $language, false);
+        $this->clearGetSlugCache($objectType, $objectId, $language, true);
+        $this->clearGetSlugCache($objectType, $objectId, $language, false);
     }
 
     /**
@@ -355,7 +355,7 @@ class ObjectRouterService {
     public function generateCustomUrl($route, $objectType, $objectId, $parameters = array(), $absolute = false) {  
         $locale = isset($parameters['_locale']) ? $parameters['_locale'] : $this->session->getLocale();
         
-        $slug = $this->getSlug($objectId, $objectType, $locale);
+        $slug = $this->getSlug($objectType, $objectId, $locale);
         
         if ($slug === false)
             throw new RouteNotFoundException('Could not find a route for object id '.$objectId.' of type '.$objectType.' in '.$locale.' locale. Maybe route is not visible?');
