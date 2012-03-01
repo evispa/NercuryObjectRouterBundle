@@ -48,18 +48,18 @@ class ObjectRouterService {
     
     /**
      *
-     * @var \Symfony\Component\HttpFoundation\Session
+     * @var \Symfony\Component\HttpFoundation\Request
      */
-    private $session;
+    private $request;
     
     private $configuration;
     
-    public function __construct($configuration, $logger, $doctrine, $router, $session) {
+    public function __construct($configuration, $logger, $doctrine, $router, $request) {
         $this->configuration = $configuration;
         $this->logger = $logger;
         $this->doctrine = $doctrine;
         $this->router = $router;
-        $this->session = $session;
+        $this->request = $request;
     }
 
     /**
@@ -315,7 +315,7 @@ class ObjectRouterService {
      */
     public function generateUrl($objectType, $objectId, $locale = false, $absolute = false) {
         if ($locale === false)
-            $locale = $this->session->getLocale();
+            $locale = $this->request->getLocale();
         
         return $this->generateCustomUrl('nercury_objectrouter_load_object', $objectType, $objectId, array(
             '_locale' => $locale,
@@ -333,7 +333,7 @@ class ObjectRouterService {
      */
     public function generateUrlWithPage($objectType, $objectId, $page, $locale = false, $absolute = false) {  
         if ($locale === false)
-            $locale = $this->session->getLocale();
+            $locale = $this->request->getLocale();
         
         return $this->generateCustomUrl('nercury_objectrouter_load_object_with_page', $objectType, $objectId, array(
             'page' => $page,
@@ -353,7 +353,7 @@ class ObjectRouterService {
      * @throws RouteNotFoundException 
      */
     public function generateCustomUrl($route, $objectType, $objectId, $parameters = array(), $absolute = false) {  
-        $locale = isset($parameters['_locale']) ? $parameters['_locale'] : $this->session->getLocale();
+        $locale = isset($parameters['_locale']) ? $parameters['_locale'] : $this->request->getLocale();
         
         $slug = $this->getSlug($objectType, $objectId, $locale);
         

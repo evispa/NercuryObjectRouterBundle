@@ -19,21 +19,19 @@
 namespace Nercury\ObjectRouterBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\Mapping\UniqueConstraint;
-use Doctrine\ORM\Mapping\Index;
 
 /**
  * Nercury\ObjectRouterBundle\Entity\ObjectRoute
  *
  * @ORM\Table(
- *  name="object_route", 
- *  uniqueConstraints = {
- *      @UniqueConstraint(name="slug_lang_idx", columns={"slug", "lng"})
- *  },
- *  indexes = {
- *      @Index(name="object_idx", columns={"object_id", "object_type"}),
- *      @Index(name="lng_idx", columns={"lng"})
- *  }
+ *     name="object_route", 
+ *     uniqueConstraints = {
+ *         @ORM\UniqueConstraint(name="slug_lang_idx", columns={"slug", "lng"})
+ *     },
+ *     indexes = {
+ *         @ORM\Index(name="object_idx", columns={"object_id", "object_type"}),
+ *         @ORM\Index(name="lng_idx", columns={"lng"})
+ *     }
  * )
  * @ORM\Entity
  */

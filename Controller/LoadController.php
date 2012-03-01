@@ -39,7 +39,7 @@ class LoadController extends Controller
      * @return array Array of [action, id]
      */
     private function getActionAndId($slug) {
-        $locale = $this->get('session')->getLocale();
+        $locale = $this->get('request')->getLocale();
         $router = $this->getObjectRouter();
         $res = $router->resolveObject($locale, $slug);
         if ($res === false)
@@ -59,7 +59,7 @@ class LoadController extends Controller
     }
     
     /**
-     * @Route("/{slug}/page-{page}", requirements={"page" = "\d+"})
+     * @Route("/{slug}/page-{page}", requirements={"slug" = ".+", "page" = "\d+"})
      */
     public function object_with_pageAction($slug, $page)
     {        
@@ -78,10 +78,10 @@ class LoadController extends Controller
     }
     
     /**
-     * @Route("/{slug}")
+     * @Route("/{slug}", requirements={"slug" = ".+"})
      */
     public function objectAction($slug)
-    {
+    {        
         list($action, $id) = $this->getActionAndId($slug);
               
         $this->get('logger')->info('Forward to route to "'.$action.'" with id '.$id.'...');
