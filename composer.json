@@ -1,5 +1,6 @@
 {
     "name":         "nercury/object-router",
+    "homepage":     "https://github.com/Nercury/NercuryObjectRouterBundle",
     "description":  "Allows to create and manage friendly routes for objects. Requires doctrine-orm to store routes.",
     "keywords":     ["routing","friendly-url"],
     "type":         "symfony-bundle",
