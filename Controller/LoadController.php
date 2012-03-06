@@ -59,8 +59,7 @@ class LoadController extends Controller
     }
     
     /**
-     * Slug length should be longer than 2 symbols
-     * Third symbol can not be /
+     * Slug length should be longer than 0 symbols
      * Page should be an integer
      * 
      * @Route("/{slug}/page-{page}", requirements={"slug" = ".+", "page" = "\d+"})
@@ -82,7 +81,7 @@ class LoadController extends Controller
     }
     
     /**
-     * Slug length should be longer than 2 symbols
+     * Slug length should be longer than 0 symbols
      * Third symbol can not be /
      * 
      * @Route("/{slug}", requirements={"slug" = ".+"})
