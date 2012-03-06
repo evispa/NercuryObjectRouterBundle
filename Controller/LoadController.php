@@ -63,10 +63,10 @@ class LoadController extends Controller
      * Third symbol can not be /
      * Page should be an integer
      * 
-     * @Route("/{slug}/page-{page}", requirements={"slug" = "^.{2}[^/].*", "page" = "\d+"})
+     * @Route("/{slug}/page-{page}", requirements={"slug" = ".+", "page" = "\d+"})
      */
     public function object_with_pageAction($slug, $page)
-    {        
+    {
         list($action, $id) = $this->getActionAndId($slug);
               
         $this->get('logger')->info('Forward to route to "'.$action.'" with id '.$id.', page '.$page.'...');
@@ -85,7 +85,7 @@ class LoadController extends Controller
      * Slug length should be longer than 2 symbols
      * Third symbol can not be /
      * 
-     * @Route("/{slug}", requirements={"slug" = "^.{2}[^/].*"})
+     * @Route("/{slug}", requirements={"slug" = ".+"})
      */
     public function objectAction($slug)
     {        
