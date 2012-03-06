@@ -109,7 +109,7 @@ Custom actions can be easily used instead of the provided two. For example, a cu
      * @return array Array of [action, id]
      */
     private function getActionAndId($slug) {
-        $locale = $this->get('session')->getLocale();
+        $locale = $this->get('request')->getLocale();
         $router = $this->get('object_router');
         $res = $router->resolveObject($locale, $slug);
         if ($res === false)

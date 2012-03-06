@@ -54,6 +54,12 @@ class ObjectRouterService {
     
     private $configuration;
     
+    /**
+     *
+     * @var \Symfony\Component\HttpKernel\Kernel 
+     */
+    private $kernel;
+    
     public function __construct($configuration, $logger, $doctrine, $router, $request) {
         $this->configuration = $configuration;
         $this->logger = $logger;
@@ -62,6 +68,10 @@ class ObjectRouterService {
         $this->request = $request;
     }
 
+    public function setKernel($kernel) {
+        $this->kernel = $kernel;
+    }
+    
     /**
      * @return \Doctrine\ORM\EntityManager
      */
@@ -197,6 +207,64 @@ class ObjectRouterService {
     }
 
     /**
+     * Gets languages used for routing. If i18n_routing bundle is loaded, get's languages from it, otherwise
+     * returns just a single language from current locale.
+     * 
+     * @return array Array of language strings 
+     */
+    public function getRouterLanguages() {
+        $container = $this->kernel->getContainer(); // todo: would be good to inject and use container directly
+        if ($container->hasParameter('jms_i18n_routing.locales')) {
+            return $container->getParameter('jms_i18n_routing.locales');
+        }
+        return array($this->request->getLocale());
+    }
+    
+    /**
+     * Set object visibility in specified languages
+     * 
+     * @param string $objectType
+     * @param integer $objectId
+     * @param boolean $value Visibility true/false
+     * @param array $languages Array of languages, or language string, or false to update all languages
+     */
+    public function setVisibility($objectType, $objectId, $value, $languages = false) {
+        if ($languages !== false) {
+            if (!is_array($languages)) {
+                $languages = array($languages);
+            }
+        }
+        
+        $this->logger->info('Set slug visibility to ' . ($value ? 1 : 0) . ' for object id '.$objectId.' of type '.$objectType.' in ' . ($languages === false ? 'all languages' : implode(', ', $languages).' languages') . '...');
+        $em = $this->getEntityManager();
+        $qb = $em->createQueryBuilder()
+                ->update('ObjectRouterBundle:ObjectRoute', 'r')
+                ->set('r.visible', $value)
+                ->andWhere('r.object_id = ?1')
+                ->andWhere('r.object_type = ?2')
+                ->setParameter(1, $objectId)
+                ->setParameter(2, $objectType);
+        
+        if ($languages !== false) {
+            $qb->andWhere('r.lng IN ?3');
+            $qb->setParameter(3, $languages);
+        }
+        
+        $q = $qb->getQuery();
+        $q->execute();
+        
+        if ($languages === false)
+            $languages = $this->getRouterLanguages();
+        
+        foreach ($languages as $language) {
+            $slug = $this->getSlug($objectType, $objectId, $language);
+            $this->clearGetSlugCache($objectType, $objectId, $language, true);
+            $this->clearGetSlugCache($objectType, $objectId, $language, false);
+            $this->clearResolveObjectCache($language, $slug);
+        }
+    }
+    
+    /**
      * Get slug for specified object, type and language
      * 
      * @param string $objectType Object type string
@@ -305,11 +373,12 @@ class ObjectRouterService {
     }
     
     /**
-     *
-     * @param type $objectType
-     * @param type $objectId
-     * @param type $locale
-     * @param type $absolute
+     * Generate object url.
+     * 
+     * @param string $objectType
+     * @param integer $objectId
+     * @param string $locale
+     * @param boolean $absolute
      * @return type
      * @throws RouteNotFoundException 
      */
@@ -323,13 +392,14 @@ class ObjectRouterService {
     }
     
     /**
-     *
-     * @param type $objectType
-     * @param type $objectId
-     * @param type $page
-     * @param type $locale
-     * @param type $absolute
-     * @return type 
+     * Generate object url with page.
+     * 
+     * @param string $objectType
+     * @param integer $objectId
+     * @param integer $page
+     * @param string $locale
+     * @param boolean $absolute
+     * @return string 
      */
     public function generateUrlWithPage($objectType, $objectId, $page, $locale = false, $absolute = false) {  
         if ($locale === false)
@@ -346,9 +416,9 @@ class ObjectRouterService {
      * 
      * @param string $route Route name
      * @param string $objectType
-     * @param string $objectId
-     * @param string $parameters Custom route parameters
-     * @param string $absolute Generate absolute url
+     * @param integer $objectId
+     * @param array $parameters Custom route parameters
+     * @param boolean $absolute Generate absolute url
      * @return string The generated URL
      * @throws RouteNotFoundException 
      */
