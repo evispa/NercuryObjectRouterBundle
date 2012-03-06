@@ -59,7 +59,11 @@ class LoadController extends Controller
     }
     
     /**
-     * @Route("/{slug}/page-{page}", requirements={"slug" = ".+", "page" = "\d+"})
+     * Slug length should be longer than 2 symbols
+     * Third symbol can not be /
+     * Page should be an integer
+     * 
+     * @Route("/{slug}/page-{page}", requirements={"slug" = "^.{2}[^/].*", "page" = "\d+"})
      */
     public function object_with_pageAction($slug, $page)
     {        
@@ -78,7 +82,10 @@ class LoadController extends Controller
     }
     
     /**
-     * @Route("/{slug}", requirements={"slug" = ".+"})
+     * Slug length should be longer than 2 symbols
+     * Third symbol can not be /
+     * 
+     * @Route("/{slug}", requirements={"slug" = "^.{2}[^/].*"})
      */
     public function objectAction($slug)
     {        
