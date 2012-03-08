@@ -14,6 +14,7 @@ services:
     object_router.redirect:
         class: %object_router.redirect.class%
         scope: request
+        arguments: [ %object_router.configuration% ]
         calls:
           - [ setObjectRouter, [ "@object_router.routing" ] ]
           - [ setDoctrine, [ "@doctrine" ] ]
