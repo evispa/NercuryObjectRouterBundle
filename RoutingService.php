@@ -27,38 +27,38 @@ use \Symfony\Component\Routing\Exception\RouteNotFoundException;
  *
  * @author nercury
  */
-class ObjectRouterService {
+class RoutingService {
 
     /**
      * @var \Symfony\Bridge\Monolog\Logger 
      */
-    private $logger;
+    protected $logger;
 
     /**
      *
      * @var \Symfony\Bundle\DoctrineBundle\Registry 
      */
-    private $doctrine;
+    protected $doctrine;
 
     /**
      *
      * @var \Symfony\Bundle\FrameworkBundle\Routing\Router 
      */
-    private $router;
+    protected $router;
     
     /**
      *
      * @var \Symfony\Component\HttpFoundation\Request
      */
-    private $request;
+    protected $request;
     
-    private $configuration;
+    protected $configuration;
     
     /**
      *
      * @var \Symfony\Component\HttpKernel\Kernel 
      */
-    private $kernel;
+    protected $kernel;
     
     public function __construct($configuration, $logger, $doctrine, $router, $request) {
         $this->configuration = $configuration;
@@ -75,7 +75,7 @@ class ObjectRouterService {
     /**
      * @return \Doctrine\ORM\EntityManager
      */
-    private function getEntityManager() {
+    protected function getEntityManager() {
         return $this->doctrine->getEntityManager();
     }
     
@@ -386,7 +386,7 @@ class ObjectRouterService {
         if ($locale === false)
             $locale = $this->request->getLocale();
         
-        return $this->generateCustomUrl('nercury_objectrouter_load_object', $objectType, $objectId, array(
+        return $this->generateCustomUrl($this->configuration['default_route'], $objectType, $objectId, array(
             '_locale' => $locale,
         ), $absolute);
     }
@@ -405,7 +405,7 @@ class ObjectRouterService {
         if ($locale === false)
             $locale = $this->request->getLocale();
         
-        return $this->generateCustomUrl('nercury_objectrouter_load_object_with_page', $objectType, $objectId, array(
+        return $this->generateCustomUrl($this->configuration['default_route_with_page'], $objectType, $objectId, array(
             'page' => $page,
             '_locale' => $locale,
         ), $absolute);
@@ -430,7 +430,23 @@ class ObjectRouterService {
         if ($slug === false)
             throw new RouteNotFoundException('Could not find a route for object id '.$objectId.' of type '.$objectType.' in '.$locale.' locale. Maybe route is not visible?');
         
+        return $this->generateCustomUrlForSlug($route, $locale, $slug, $parameters, $absolute);
+    }
+    
+    /**
+     * Generate url with explicitly specified slug
+     * 
+     * @param string $route Route name
+     * @param string $locale
+     * @param string $slug
+     * @param array $parameters Custom route parameters
+     * @param boolean $absolute Generate absolute url
+     * @return type The generated URL
+     */
+    public function generateCustomUrlForSlug($route, $locale, $slug, $parameters = array(), $absolute = false) {
         $parameters['slug'] = $slug;
+        if (!isset($parameters['_locale']))
+            $parameters['_locale'] = $locale;
         
         return $this->router->generate($route, $parameters, $absolute);
     }

@@ -26,10 +26,17 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class LoadController extends Controller
 {
     /**
-     * @return Nercury\ObjectRouterBundle\ObjectRouterService
+     * @return Nercury\ObjectRouterBundle\RoutingService
      */
     private function getObjectRouter() {
-        return $this->get('object_router');
+        return $this->get('object_router.routing');
+    }
+    
+    /**
+     * @return Nercury\ObjectRouterBundle\RedirectService
+     */
+    private function getRedirectService() {
+        return $this->get('object_router.redirect');
     }
     
     /**
@@ -62,7 +69,7 @@ class LoadController extends Controller
      * Slug length should be longer than 0 symbols
      * Page should be an integer
      * 
-     * @Route("/{slug}/page-{page}", requirements={"slug" = ".+", "page" = "\d+"})
+     * @Route("/{slug}/page-{page}", name="object_route_with_page", requirements={"slug" = ".+", "page" = "\d+"})
      */
     public function object_with_pageAction($slug, $page)
     {
@@ -84,7 +91,7 @@ class LoadController extends Controller
      * Slug length should be longer than 0 symbols
      * Third symbol can not be /
      * 
-     * @Route("/{slug}", requirements={"slug" = ".+"})
+     * @Route("/{slug}", name="object_route", requirements={"slug" = ".+"})
      */
     public function objectAction($slug)
     {        
@@ -97,5 +104,17 @@ class LoadController extends Controller
         ));
 
         return $response;
+    }
+    
+    /**
+     * Process redirect for specified redirect object
+     * 
+     * @param integer $id Redirect object ID 
+     */
+    public function redirectHandler($id) {
+        
+        $redirectService = $this->getRedirectService();
+        //$redirectService->
+        
     }
 }

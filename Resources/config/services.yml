@@ -1,13 +1,21 @@
 parameters:
-    object_router.class: Nercury\ObjectRouterBundle\RoutingService
+    object_router.routing.class: Nercury\ObjectRouterBundle\RoutingService
+    object_router.redirect.class: Nercury\ObjectRouterBundle\RedirectService
     object_router.configuration: ~
 
 services:
-    object_router:
-        class: %object_router.class%
+    object_router.routing:
+        class: %object_router.routing.class%
         scope: request
         arguments: [ %object_router.configuration%, "@logger", "@doctrine", "@router", "@request" ]
         calls:
           - [ setKernel, [ "@kernel" ] ]
+          
+    object_router.redirect:
+        class: %object_router.redirect.class%
+        scope: request
+        calls:
+          - [ setObjectRouter, [ "@object_router.routing" ] ]
+          - [ setDoctrine, [ "@doctrine" ] ]
           
         

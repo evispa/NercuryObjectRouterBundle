@@ -41,6 +41,8 @@ class Configuration implements ConfigurationInterface
         // more information on that topic.
 
         $rootNode->children()
+            ->scalarNode('default_route')->defaultValue('object_route')->end()
+            ->scalarNode('default_route_with_page')->defaultValue('object_route_with_page')->end()
             ->arrayNode('controllers')
                 ->defaultValue(array())
                 ->useAttributeAsKey('id')

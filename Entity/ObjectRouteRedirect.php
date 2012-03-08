@@ -26,10 +26,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Object router object which handles redirects from old links.
  *
  * @ORM\Table(
- *     name="object_route_redirect", 
- *     indexes = {
- *         @ORM\Index(name="object_route_id", columns={"object_route_id"}),
- *     }
+ *     name="object_route_redirect"
  * )
  * @ORM\Entity
  */
@@ -45,14 +42,8 @@ class ObjectRouteRedirect
     private $id;
 
     /**
-     * @var integer $object_route_id
-     *
-     * @ORM\Column(name="object_route_id", type="integer")
-     */
-    private $object_route_id;
-
-    /**
      * 301 - Moved Permanently -- used when this url should no longer be used
+     * 302 - Found -- redirect to another url, but still use this url for next requests
      * 303 - See Other -- url is valid, but redirect for other reasons
      * 
      * @var integer $type
@@ -61,6 +52,16 @@ class ObjectRouteRedirect
      */
     private $type;
 
+    /** 
+     * @var ObjectRoute
+     *
+     * @ORM\ManyToOne(targetEntity="ObjectRoute")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="object_route_id", referencedColumnName="id", onDelete="CASCADE")
+     * })
+     */
+    private $objectRoute;
+    
     /**
      * Get id
      *
@@ -72,29 +73,8 @@ class ObjectRouteRedirect
     }
 
     /**
-     * Set object_route_id
-     *
-     * @param integer $objectRouteId
-     * @return ObjectRouteRedirect
-     */
-    public function setObjectRouteId($objectRouteId)
-    {
-        $this->object_route_id = $objectRouteId;
-        return $this;
-    }
-
-    /**
-     * Get object_route_id
-     *
-     * @return integer 
-     */
-    public function getObjectRouteId()
-    {
-        return $this->object_route_id;
-    }
-
-    /**
      * 301 - Moved Permanently -- used when this url should no longer be used
+     * 302 - Found -- redirect to another url, but still use this url for next requests
      * 303 - See Other -- url is valid, but redirect for other reasons
      *
      * @param integer $type
@@ -108,6 +88,7 @@ class ObjectRouteRedirect
 
     /**
      * 301 - Moved Permanently -- used when this url should no longer be used
+     * 302 - Found -- redirect to another url, but still use this url for next requests
      * 303 - See Other -- url is valid, but redirect for other reasons
      *
      * @return integer 
@@ -115,5 +96,27 @@ class ObjectRouteRedirect
     public function getType()
     {
         return $this->type;
+    }
+
+    /**
+     * Set objectRoute
+     *
+     * @param Nercury\ObjectRouterBundle\Entity\ObjectRoute $objectRoute
+     * @return ObjectRouteRedirect
+     */
+    public function setObjectRoute(\Nercury\ObjectRouterBundle\Entity\ObjectRoute $objectRoute = null)
+    {
+        $this->objectRoute = $objectRoute;
+        return $this;
+    }
+
+    /**
+     * Get objectRoute
+     *
+     * @return Nercury\ObjectRouterBundle\Entity\ObjectRoute 
+     */
+    public function getObjectRoute()
+    {
+        return $this->objectRoute;
     }
 }
