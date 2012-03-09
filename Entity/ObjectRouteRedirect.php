@@ -62,6 +62,16 @@ class ObjectRouteRedirect
      */
     private $objectRoute;
     
+    /** 
+     * @var ObjectRoute
+     *
+     * @ORM\ManyToOne(targetEntity="ObjectRoute")
+     * @ORM\JoinColumns({
+     *   @ORM\JoinColumn(name="id", referencedColumnName="object_id")
+     * })
+     */
+    private $objectRedirectRoute;
+    
     /**
      * Get id
      *

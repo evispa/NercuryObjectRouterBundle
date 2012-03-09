@@ -168,8 +168,9 @@ class RoutingService {
      * @param integer $objectId Id of the object
      * @param string $language Language for slug
      * @param string $slug Object slug
+     * @param boolean $defaultVisible Specify if route should be visible if created for the first time
      */
-    public function setSlug($objectType, $objectId, $language, $slug) {
+    public function setSlug($objectType, $objectId, $language, $slug, $defaultVisible = false) {
         $this->logger->info('Set slug to ' . $slug . ' for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
         $em = $this->getEntityManager();
         $q = $em->createQueryBuilder()
@@ -191,7 +192,7 @@ class RoutingService {
             $route->setLng($language);
             $route->setObjectId($objectId);
             $route->setObjectType($objectType);
-            $route->setVisible(0);
+            $route->setVisible($defaultVisible);
             $em->persist($route);
         } else {
             $route = $res[0];

@@ -26,14 +26,14 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class LoadController extends Controller
 {
     /**
-     * @return Nercury\ObjectRouterBundle\RoutingService
+     * @return \Nercury\ObjectRouterBundle\RoutingService
      */
     private function getObjectRouter() {
         return $this->get('object_router.routing');
     }
     
     /**
-     * @return Nercury\ObjectRouterBundle\RedirectService
+     * @return \Nercury\ObjectRouterBundle\RedirectService
      */
     private function getRedirectService() {
         return $this->get('object_router.redirect');
@@ -89,7 +89,6 @@ class LoadController extends Controller
     
     /**
      * Slug length should be longer than 0 symbols
-     * Third symbol can not be /
      * 
      * @Route("/{slug}", name="object_route", requirements={"slug" = ".+"})
      */
@@ -111,10 +110,16 @@ class LoadController extends Controller
      * 
      * @param integer $id Redirect object ID 
      */
-    public function redirectHandler($id) {
+    public function redirectHandlerAction($id) {
         
         $redirectService = $this->getRedirectService();
-        //$redirectService->
+        $response = $redirectService->getResponseForLink($id);
+        
+        if ($response === false) {
+            throw new NotFoundHttpException('It looks like ObjectRouter redirect points to invalid redirect resource.');
+        }
+        
+        return $response;
         
     }
 }
