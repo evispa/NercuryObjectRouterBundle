@@ -47,7 +47,7 @@ It redirects the {page} parameter to the actual controller and action which rece
 
 To assign a route slug to some object, use::
 
-    $this->get('object_router')->setSlug('product', $id, $locale, 'test-route');
+    $this->get('object_router.routing')->setSlug('product', $id, $locale, 'test-route');
 
 Url should be routed to the product action when accessing the page over::
 

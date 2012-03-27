@@ -110,31 +110,68 @@ class RedirectService {
         return $redirect->getId();
     }
     
+    /**
+     * Get redirect links to an object.
+     * 
+     * @param string $objectType Object type
+     * @param integer $objectId Object Id
+     * @param integer $type Redirect type (301, 302, ...). If false, returns all redirects.
+     * @param string $locale Object locale. If false, returns links to object in all locales.
+     * @return array Returns array of 
+     *      "slug" - redirect route slug, 
+     *      "linkId" - redirect item id,
+     *      "locale" - redirect route locale
+     *      "visible" - true if redirect is visible
+     *      "redirectType" - redirect type (301, 302, ...)
+     *      "objectLng" - target object language for this specific route
+     */
     public function getRedirectsToObject($objectType, $objectId, $type = false, $locale = false) {
-        
+                
         $em = $this->getEntityManager();
         
         $qb = $em->createQueryBuilder();
         $qb->from('ObjectRouterBundle:ObjectRouteRedirect', 'rr')
                 ->innerJoin('rr.objectRoute', 'r')
-                ->innerJoin('rr.objectRedirectRoute', 'orr')
-                ->andWhere('orr.object_type = :redirect_type')
                 ->andWhere('r.object_type = ?1')
                 ->andWhere('r.object_id = ?2')
-                ->select('rr.id as linkId, rr.type, orr.lng as locale, orr.slug, orr.visible')
-                ->setParameter('redirect_type', 'redirect')
+                ->select('rr.id as linkId, r.lng as objectLng, rr.type as redirectType')
                 ->setParameter(1, $objectType)
                 ->setParameter(2, $objectId);
+
+        if ($locale !== false) {
+            $qb->andWhere('r.lng = :lng')->setParameter('lng', $locale);
+        }
         
         if ($type !== false) {
-            $qb->andWhere('rr.type = ?3')->setParameter(3, $type);
+            $qb->andWhere('rr.type = :type')->setParameter('type', $type);
         }
         
-        if ($locale !== false) {
-            $qb->andWhere('r.lng = ?4')->setParameter(4, $locale);
+        $link_ids = array();
+        $link_data = array();
+        foreach ($qb->getQuery()->getArrayResult() as $row) {
+            $link_ids[] = $row['linkId'];
+            $link_data[$row['linkId']] = $row;
         }
         
-        return $qb->getQuery()->execute();
+        if (empty($link_ids))
+            return array();
+        
+        $qb = $em->createQueryBuilder();
+        $qb->from('ObjectRouterBundle:ObjectRoute', 'r')
+                ->andWhere('r.object_type = :ot')
+                ->andWhere('r.object_id IN (:ids)')
+                ->select('r.slug, r.object_id as linkId, r.lng as locale, r.visible')
+                ->setParameter('ot', 'redirect')
+                ->setParameter('ids', $link_ids);
+               
+        $results = $qb->getQuery()->execute();
+        
+        foreach ($results as &$row) {
+            $row['redirectType'] = $link_data[$row['linkId']]['redirectType'];
+            $row['objectLng'] = $link_data[$row['linkId']]['objectLng'];
+        }
+        
+        return $results;
         
     }
     

@@ -30,10 +30,13 @@ use Doctrine\ORM\Mapping as ORM;
  *     },
  *     indexes = {
  *         @ORM\Index(name="object_idx", columns={"object_id", "object_type"}),
- *         @ORM\Index(name="lng_idx", columns={"lng"})
+ *         @ORM\Index(name="lng_idx", columns={"lng"}),
+ *         @ORM\Index(name="created_idx", columns={"created_at"}),
+ *         @ORM\Index(name="updated_idx", columns={"updated_at"})
  *     }
  * )
  * @ORM\Entity
+ * @ORM\HasLifecycleCallbacks()
  */
 class ObjectRoute
 {
@@ -81,6 +84,19 @@ class ObjectRoute
      */
     private $visible;
 
+    /**
+     * @var datetime 
+     * 
+     * @ORM\Column(name="created_at", type="datetime")
+     */
+    private $created_at;
+    
+    /**
+     * @var datetime 
+     * 
+     * @ORM\Column(name="updated_at", type="datetime")
+     */
+    private $updated_at;
 
     /**
      * Get id
@@ -190,5 +206,61 @@ class ObjectRoute
     public function getVisible()
     {
         return $this->visible;
+    }
+
+    /**
+     * Set created_at
+     *
+     * @param datetime $createdAt
+     * @return ObjectRoute
+     */
+    public function setCreatedAt($createdAt)
+    {
+        $this->created_at = $createdAt;
+        return $this;
+    }
+
+    /**
+     * Get created_at
+     *
+     * @return datetime 
+     */
+    public function getCreatedAt()
+    {
+        return $this->created_at;
+    }
+
+    /**
+     * Set updated_at
+     *
+     * @param datetime $updatedAt
+     * @return ObjectRoute
+     */
+    public function setUpdatedAt($updatedAt)
+    {
+        $this->updated_at = $updatedAt;
+        return $this;
+    }
+
+    /**
+     * Get updated_at
+     *
+     * @return datetime 
+     */
+    public function getUpdatedAt()
+    {
+        return $this->updated_at;
+    }
+    
+    public function __construct() {
+        $this->created_at = new \DateTime();
+        $this->updated_at = $this->created_at;
+    }
+    
+    /**
+     * @ORM\PreUpdate() 
+     */
+    public function preUpdate() {
+        $this->updated_at = new \DateTime();
     }
 }

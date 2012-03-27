@@ -26,7 +26,10 @@ use Doctrine\ORM\Mapping as ORM;
  * Object router object which handles redirects from old links.
  *
  * @ORM\Table(
- *     name="object_route_redirect"
+ *     name="object_route_redirect", 
+ *     uniqueConstraints = {
+ *         @ORM\UniqueConstraint(name="unique_redirect_type_idx", columns={"object_route_id", "type"})
+ *     }
  * )
  * @ORM\Entity
  */
@@ -51,7 +54,7 @@ class ObjectRouteRedirect
      * @ORM\Column(name="type", type="integer")
      */
     private $type;
-
+    
     /** 
      * @var ObjectRoute
      *
@@ -61,17 +64,7 @@ class ObjectRouteRedirect
      * })
      */
     private $objectRoute;
-    
-    /** 
-     * @var ObjectRoute
-     *
-     * @ORM\ManyToOne(targetEntity="ObjectRoute")
-     * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="id", referencedColumnName="object_id")
-     * })
-     */
-    private $objectRedirectRoute;
-    
+       
     /**
      * Get id
      *

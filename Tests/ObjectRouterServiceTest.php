@@ -66,7 +66,7 @@ class ObjectRouterServiceTest extends WebTestCase
         
         $service = $client->getContainer()->get("object_router");
         $object = $service->resolveObject('lt', $this->test_route_slug);
-        
+                
         $this->assertNotEquals($object, false);
         $this->assertEquals($object[0], 184564); // object id
         $this->assertEquals($object[1], 'very_good_object_type'); // object type
