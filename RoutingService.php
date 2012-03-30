@@ -136,12 +136,12 @@ class RoutingService {
      * 
      * @param string $language
      * @param string $slug 
-     * @return array Pair of objectId and objectType: array(id, type) or FALSE on failure
+     * @return array of objectId and objectType: array(id, type, visible) or FALSE on failure
      */
     public function resolveObject($language, $slug) {
         $this->logger->info('Resolve object slug ' . $slug . ' in ' . $language . ' language...');
-        $em = $this->getEntityManager();
-
+        $em = $this->getEntityManager();       
+        
         $q = $em->createQueryBuilder()
                 ->from('ObjectRouterBundle:ObjectRoute', 'r')
                 ->andWhere('r.lng = ?1')
@@ -184,7 +184,7 @@ class RoutingService {
                 ->setParameter(3, $objectType)
                 ->setMaxResults(1)
                 ->getQuery();
-        
+                
         $res = $q->getResult();
         
         if (empty($res)) {
@@ -201,7 +201,7 @@ class RoutingService {
         $route->setSlug($slug);
         
         $em->flush();
-        
+                
         $this->clearGetSlugCache($objectType, $objectId, $language, true);
         $this->clearGetSlugCache($objectType, $objectId, $language, false);
         $this->clearResolveObjectCache($language, $slug);
@@ -240,15 +240,16 @@ class RoutingService {
         $em = $this->getEntityManager();
         $qb = $em->createQueryBuilder()
                 ->update('ObjectRouterBundle:ObjectRoute', 'r')
-                ->set('r.visible', $value)
-                ->andWhere('r.object_id = ?1')
-                ->andWhere('r.object_type = ?2')
-                ->setParameter(1, $objectId)
-                ->setParameter(2, $objectType);
+                ->set('r.visible', '?1')
+                ->andWhere('r.object_id = ?2')
+                ->andWhere('r.object_type = ?3')
+                ->setParameter(1, $value)
+                ->setParameter(2, $objectId)
+                ->setParameter(3, $objectType);
         
         if ($languages !== false) {
-            $qb->andWhere('r.lng IN ?3');
-            $qb->setParameter(3, $languages);
+            $qb->andWhere('r.lng in (?4)');
+            $qb->setParameter(4, $languages);
         }
         
         $q = $qb->getQuery();
@@ -277,7 +278,7 @@ class RoutingService {
     public function getSlug($objectType, $objectId, $language, $only_visible = true) {
         $this->logger->info('Get slug for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
         $em = $this->getEntityManager();
-
+       
         $qb = $em->createQueryBuilder()
                 ->from('ObjectRouterBundle:ObjectRoute', 'r')
                 ->andWhere('r.lng = ?1')
@@ -301,6 +302,18 @@ class RoutingService {
             return FALSE;
         
         return $res[0]['slug'];
+    }
+    
+    /**
+     * Return visibility
+     * 
+     * @param type $objectType
+     * @param type $objectId
+     * @param type $language
+     * @return type 
+     */
+    public function getVisibility($objectType, $objectId, $language) {
+        return $this->getSlug($objectType, $objectId, $language) !== FALSE;
     }
 
     /**
@@ -373,6 +386,14 @@ class RoutingService {
         return $this->configuration['controllers'][$type];
     }
     
+    public function getDefaultRoute() {
+        return $this->configuration['default_route'];
+    }
+    
+    public function getDefaultRouteWithPage() {
+        return $this->configuration['default_route_with_page'];
+    }
+    
     /**
      * Generate object url.
      * 
@@ -387,7 +408,7 @@ class RoutingService {
         if ($locale === false)
             $locale = $this->request->getLocale();
         
-        return $this->generateCustomUrl($this->configuration['default_route'], $objectType, $objectId, array(
+        return $this->generateCustomUrl($this->getDefaultRoute(), $objectType, $objectId, array(
             '_locale' => $locale,
         ), $absolute);
     }
@@ -406,7 +427,7 @@ class RoutingService {
         if ($locale === false)
             $locale = $this->request->getLocale();
         
-        return $this->generateCustomUrl($this->configuration['default_route_with_page'], $objectType, $objectId, array(
+        return $this->generateCustomUrl($this->getDefaultRouteWithPage(), $objectType, $objectId, array(
             'page' => $page,
             '_locale' => $locale,
         ), $absolute);
@@ -450,6 +471,14 @@ class RoutingService {
             $parameters['_locale'] = $locale;
         
         return $this->router->generate($route, $parameters, $absolute);
+    }
+    
+    public function generateDefaultUrlForSlug($locale, $slug) {
+        return $this->generateCustomUrlForSlug($this->getDefaultRoute(), $locale, $slug);
+    }
+    
+    public function generateDefaultUrlWithPageForSlug($locale, $slug, $page) {
+        return $this->generateCustomUrlForSlug($this->getDefaultRoute(), $locale, $slug, array('page' => $page));
     }
     
 }

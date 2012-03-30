@@ -40,6 +40,12 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ObjectRoute
 {
+    const OBJECT_TYPE_PRODUCT   = 'product';
+    const OBJECT_TYPE_CATEGORY  = 'category';
+    const OBJECT_TYPE_EVENT     = 'event';
+    const OBJECT_TYPE_NEWS      = 'news';
+    const OBJECT_TYPE_REDIRECT  = 'redirect';
+    
     /**
      * @var integer $id
      *
