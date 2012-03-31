@@ -147,11 +147,11 @@ class GeneratorService {
             '\.+$' => ''
         );
         $string = strip_tags($string);
-        
+
         foreach ($trans as $key => $val) {
             $string = preg_replace("#" . $key . "#i", $val, $string);
         }
-        
+
         $string = strtolower($string);
         return trim(stripslashes($string));
     }

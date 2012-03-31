@@ -40,7 +40,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class ObjectRoute
 {
-    
+   
     /**
      * @var integer $id
      *
