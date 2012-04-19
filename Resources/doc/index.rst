@@ -99,9 +99,9 @@ To enable redirects, add this object route:
 
     object_router:
         controllers:
-            ...
+            <...>
             redirect: ObjectRouterBundle:Load:redirectHandler
-            ...
+            <...>
 
 To create a redirect to an object:
 
