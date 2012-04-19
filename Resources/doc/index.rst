@@ -87,7 +87,7 @@ To get an url with a page, use::
 Custom action
 -------------
 
-Custom actions can be easily used instead of the provided two. Read documentation here :doc:`here <custom_action>`.
+Custom actions can be easily used instead of the provided two. More documentation in custom_action.rst.
 
 Redirects
 ---------
