@@ -39,7 +39,7 @@ class GeneratorService {
     protected $kernel;
     
     /**
-     * ANAL FROM OLD VERSION
+     * 
      * @var array
      */
     private $translit = array(
@@ -64,12 +64,11 @@ class GeneratorService {
         "Ä" => "A", "Ö" => "O", "Õ" => "O", "Ü" => "U",
     );
 
-    public function __construct($configuration, $logger, $doctrine, $router, $request) {
+    public function __construct($configuration, $logger, $doctrine, $router) {
         $this->configuration = $configuration;
         $this->logger = $logger;
         $this->doctrine = $doctrine;
         $this->router = $router;
-        $this->request = $request;
     }
     
     public function setKernel($kernel) {
@@ -106,6 +105,18 @@ class GeneratorService {
     }
     
     /**
+     * 
+     * @return type 
+     */
+    private function getCurrentLocale() {
+        if(!$this->kernel->getContainer()->isScopeActive('request')) {
+            return $this->kernel->getContainer()->getParameter('locale');
+        }else{
+            return $this->kernel->getContainer()->get('request')->getLocale();
+        }
+    }
+    
+    /**
      * Check if already exists
      * TODO: Check router translations files
      * 
@@ -115,7 +126,7 @@ class GeneratorService {
      */
     public function slugExists($objectType, $objectId, $locale, $slug) {
         if ($locale === false)
-            $locale = $this->request->getLocale();
+            $locale = $this->getCurrentLocale();
         
         $object = $this->objectRouter->resolveObject($locale, $slug);
         

@@ -7,14 +7,12 @@ parameters:
 services:
     object_router.routing:
         class: %object_router.routing.class%
-        scope: request
-        arguments: [ %object_router.configuration%, "@logger", "@doctrine", "@router", "@request" ]
+        arguments: [ %object_router.configuration%, "@logger", "@doctrine", "@router"]
         calls:
           - [ setKernel, [ "@kernel" ] ]
           
     object_router.redirect:
         class: %object_router.redirect.class%
-        scope: request
         arguments: [ %object_router.configuration% ]
         calls:
           - [ setObjectRouter, [ "@object_router.routing" ] ]
@@ -22,8 +20,7 @@ services:
           
     object_router.generator:
         class: %object_router.generator.class%
-        scope: request
-        arguments: [ %object_router.configuration%, "@logger", "@doctrine", "@router", "@request" ]
+        arguments: [ %object_router.configuration%, "@logger", "@doctrine", "@router" ]
         calls:
           - [ setKernel, [ "@kernel" ] ]
           - [ setObjectRouter, [ "@object_router.routing" ] ]

@@ -46,12 +46,6 @@ class RoutingService {
      */
     protected $router;
     
-    /**
-     *
-     * @var \Symfony\Component\HttpFoundation\Request
-     */
-    protected $request;
-    
     protected $configuration;
     
     /**
@@ -60,12 +54,11 @@ class RoutingService {
      */
     protected $kernel;
     
-    public function __construct($configuration, $logger, $doctrine, $router, $request) {
+    public function __construct($configuration, $logger, $doctrine, $router) {
         $this->configuration = $configuration;
         $this->logger = $logger;
         $this->doctrine = $doctrine;
         $this->router = $router;
-        $this->request = $request;
     }
 
     public function setKernel($kernel) {
@@ -77,6 +70,18 @@ class RoutingService {
      */
     protected function getEntityManager() {
         return $this->doctrine->getEntityManager();
+    }
+    
+    /**
+     * 
+     * @return type 
+     */
+    private function getCurrentLocale() {
+        if(!$this->kernel->getContainer()->isScopeActive('request')) {
+            return $this->kernel->getContainer()->getParameter('locale');
+        }else{
+            return $this->kernel->getContainer()->get('request')->getLocale();
+        }
     }
     
     /**
@@ -218,7 +223,7 @@ class RoutingService {
         if ($container->hasParameter('jms_i18n_routing.locales')) {
             return $container->getParameter('jms_i18n_routing.locales');
         }
-        return array($this->request->getLocale());
+        return array($container->getParameter('locale'));
     }
     
     /**
@@ -406,7 +411,7 @@ class RoutingService {
      */
     public function generateUrl($objectType, $objectId, $locale = false, $absolute = false) {
         if ($locale === false)
-            $locale = $this->request->getLocale();
+            $locale = $this->getCurrentLocale();
         
         return $this->generateCustomUrl($this->getDefaultRoute(), $objectType, $objectId, array(
             '_locale' => $locale,
@@ -425,7 +430,7 @@ class RoutingService {
      */
     public function generateUrlWithPage($objectType, $objectId, $page, $locale = false, $absolute = false) {  
         if ($locale === false)
-            $locale = $this->request->getLocale();
+            $locale = $this->getCurrentLocale();
         
         return $this->generateCustomUrl($this->getDefaultRouteWithPage(), $objectType, $objectId, array(
             'page' => $page,

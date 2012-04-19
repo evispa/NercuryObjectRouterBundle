@@ -1,8 +1,15 @@
+.. toctree ::
+    :hidden:
+    
+    custom_action
+
 ========
 Overview
 ========
 
 Allows to create and manage friendly routes for objects.
+Provides a way to manage redirects to routes.
+Features unique slug generator.
 
 -   It is a map from [locale, slug] to [object type, id] and vice versa.
 -   You can get object type and id by providing locale and slug to object_router 
@@ -55,11 +62,11 @@ Url should be routed to the product action when accessing the page over::
 
 You can get url of the product by calling::
 
-    $this->get('object_router')->generateUrl('product', $id); // get url in current locale
+    $this->get('object_router.routing')->generateUrl('product', $id); // get url in current locale
 
 Localle can be specified as an additional parameter::
 
-    $this->get('object_router')->generateUrl('product', $id, $locale);
+    $this->get('object_router.routing')->generateUrl('product', $id, $locale);
 
 Pagination
 ----------
@@ -75,60 +82,41 @@ It redirects the {page} parameter to the actual controller and action which rece
 
 To get an url with a page, use::
 
-    $this->get('object_router')->generateUrlWithPage('product', $id, $page);
+    $this->get('object_router.routing')->generateUrlWithPage('product', $id, $page);
 
 Custom action
 -------------
 
-Custom actions can be easily used instead of the provided two. For example, a custom action that receives additional string parameter can be defined like this::
+Custom actions can be easily used instead of the provided two. Read documentation here :doc:`here <custom_action>`.
 
-    /**
-     * @Route("/{slug}/{custom_var}")
-     */
-    public function customAction($slug, $custom_var)
-    {        
-        list($action, $id) = $this->getActionAndId($slug);
-              
-        $this->get('logger')->info('Forward to route to "'.$action.'" with id '.$id.', custom_var '.$custom_var.'...');
-        
-        $router = $this->get('router');
-        
-        $response = $this->forward($action, array(
-            'id'  => $id,
-            'custom_var' => $custom_var,
-        ));
-        
-        return $response;
-    }
+Redirects
+---------
 
-    /**
-     * Helper to get action and id for slug string. Throws NotFound exceptions if slug is not found.
-     * This is copied from Nercury/ObjectRouterBundle/Controllers/LoadController
-     *
-     * @param string $slug 
-     * @return array Array of [action, id]
-     */
-    private function getActionAndId($slug) {
-        $locale = $this->get('request')->getLocale();
-        $router = $this->get('object_router');
-        $res = $router->resolveObject($locale, $slug);
-        if ($res === false)
-            throw new NotFoundHttpException('Unable to locate a route with slug "'.$slug .'" in "'.$locale.'" locale.');
-        
-        list($id, $type, $visible) = $res;
-        
-        if (!$visible)
-            throw new NotFoundHttpException('Route with slug "'.$slug .'" in "'.$locale.'" locale is not available for viewing.');
-        
-        $action = $router->getObjectTypeAction($type);
-        
-        if ($action === false)
-            throw new NotFoundHttpException('Route with slug "'.$slug .'" in "'.$locale.'" has type "'.$type.'", but no assigned action to forward to.');
-        
-        return array($action, $id);
-    }
+Object router features a way to manage redirects over "redirect" object. This way
+default router logic is not polluted with redirect functionality if it is not needed.
 
-Url can also be generated even for the custom action::
+To enable redirects, add this object route:
 
-    $this->get('object_router')->generateCustomUrl('your_bundle_controller_custom', 
-        $objectType, $objectId, array('custom_var' => $custom_var));
+    object_router:
+        controllers:
+            ...
+            redirect: ObjectRouterBundle:Load:redirectHandler
+            ...
+
+To create a redirect to an object:
+
+    $this->get('object_router.redirect')->addRedirectToObject('product', $id, $locale, $redirectFromSlug);
+
+Additionally redirect type can be specified (Permanent redirect is the default).
+
+    $this->get('object_router.redirect')->addRedirectToObject('product', $id, $locale, $redirectFromSlug, 301);
+
+Generator
+---------
+
+Since object slugs need to be unique, a generator is available to automatically generate and set such slugs.
+Generator can use any string as source for slug. Generated slug is returned as string.
+
+    $finalSlug = $this->get('object_router.generator')->setUniqueSlug('product', $id, $locale, 'Not unique text', true);
+
+    // $finalSlug contains 'not-unique-text'
