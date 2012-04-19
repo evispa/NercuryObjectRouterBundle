@@ -95,7 +95,7 @@ Redirects
 Object router features a way to manage redirects over "redirect" object. This way
 default router logic is not polluted with redirect functionality if it is not needed.
 
-To enable redirects, add this object route:
+To enable redirects, add this object route::
 
     object_router:
         controllers:
@@ -103,11 +103,11 @@ To enable redirects, add this object route:
             redirect: ObjectRouterBundle:Load:redirectHandler
             <...>
 
-To create a redirect to an object:
+To create a redirect to an object::
 
     $this->get('object_router.redirect')->addRedirectToObject('product', $id, $locale, $redirectFromSlug);
 
-Additionally redirect type can be specified (Permanent redirect is the default).
+Additionally redirect type can be specified (Permanent redirect is the default)::
 
     $this->get('object_router.redirect')->addRedirectToObject('product', $id, $locale, $redirectFromSlug, 301);
 
@@ -115,7 +115,7 @@ Generator
 ---------
 
 Since object slugs need to be unique, a generator is available to automatically generate and set such slugs.
-Generator can use any string as source for slug. Generated slug is returned as string.
+Generator can use any string as source for slug. Generated slug is returned as string::
 
     $finalSlug = $this->get('object_router.generator')->setUniqueSlug('product', $id, $locale, 'Not unique text', true);
 
