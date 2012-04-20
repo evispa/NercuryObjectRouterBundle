@@ -64,7 +64,7 @@ class ObjectRouterServiceTest extends WebTestCase
         
         $route = $this->_getTestRoute($em);
         
-        $service = $client->getContainer()->get("object_router");
+        $service = $client->getContainer()->get("object_router.routing");
         $object = $service->resolveObject('lt', $this->test_route_slug);
                 
         $this->assertNotEquals($object, false);
@@ -82,7 +82,7 @@ class ObjectRouterServiceTest extends WebTestCase
         $em = $doctrine->getEntityManager();
         
         $route = $this->_getTestRoute($em);
-        $service = $client->getContainer()->get("object_router");
+        $service = $client->getContainer()->get("object_router.routing");
         
         $other_slug = 'other_object_slug_'.mt_rand(0, 500000);
         $service->setSlug('very_good_object_type', 184564, 'lt', $other_slug);
@@ -102,7 +102,7 @@ class ObjectRouterServiceTest extends WebTestCase
         $em = $doctrine->getEntityManager();
         
         $route = $this->_getTestRoute($em);
-        $service = $client->getContainer()->get("object_router");
+        $service = $client->getContainer()->get("object_router.routing");
         $other_slug = 'other_object_slug_'.mt_rand(0, 500000);
         $service->setSlug('very_good_object_type', 184564, 'lt', $other_slug);
         $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
@@ -120,7 +120,7 @@ class ObjectRouterServiceTest extends WebTestCase
         $em = $doctrine->getEntityManager();
         
         $route = $this->_getTestRoute($em);
-        $service = $client->getContainer()->get("object_router");
+        $service = $client->getContainer()->get("object_router.routing");
         $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
         $this->assertEquals($slug, $this->test_route_slug);
         $service->setSlug('very_good_object_type', 184564, 'en', 'miau-aaaaaa-miau');
@@ -147,7 +147,7 @@ class ObjectRouterServiceTest extends WebTestCase
         $em = $doctrine->getEntityManager();
         
         $route = $this->_getTestRoute($em);
-        $service = $client->getContainer()->get("object_router");
+        $service = $client->getContainer()->get("object_router.routing");
         $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
         $this->assertEquals($slug, $this->test_route_slug);
         
