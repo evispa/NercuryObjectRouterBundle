@@ -1,53 +1,6 @@
-=============
-Quick Summary
-=============
-
-Requirements
-------------
-
--   Doctrine2
--   Framework Extra Bundle
-
-What It Does
-------------
-
-Allows multiple object types to share the same friendly route space.
-For example, menu::
-
-/my-menu-a
-/my-menu-b
-
-A product::
-
-/some-product-link
-
-An article::
-
-/my-article
-
-Allows you to define object types and their controllers in a config file::
-
-    object_router:
-        controllers:
-            menu: CategoryBundle:MainController:showCategory
-            product: ProductBundle:MainController:showProduct
-            article: CmsBundle:MainController:showArticle
-
-Generate a unique slug for link to an object::
-
-    $generatedSlug = $this->get('object_router.generator')
-        ->setUniqueSlug('product', $id, $request->getLocale(), 'My Menu Title');
-
-Generates and sets 'my-menu-title'.
-If 'my-menu-title' is already used (by any other object), generates 'my-menu-title-1', '...-2' and so on.
-
-Get a link to an object by it's type and id::
-
-    $link = $this->get('object_router.routing')->generateUrl('product', $id);
-
-==================
-More detailed info
-==================
+========
+Overview
+========
 
 Allows to create and manage friendly routes for objects.
 Provides a way to manage redirects to routes.
@@ -66,16 +19,7 @@ Features unique slug generator.
 Installation
 ------------
 
-Recommended instalation is over Composer::
-
-    // composer.json
-    {
-        // ...
-        require: {
-            // ...
-            "nercury/object-router": "master-dev"
-        }
-    }
+Recommended instalation is over Composer.
 
 Configuration and usage
 -----------------------
@@ -138,7 +82,7 @@ To get an url with a page, use::
 Custom action
 -------------
 
-Custom actions can be easily used instead of the provided two. More documentation in custom_action.rst.
+Custom actions can be easily used instead of the provided two. More documentation in doc/custom_action.rst.
 
 Redirects
 ---------

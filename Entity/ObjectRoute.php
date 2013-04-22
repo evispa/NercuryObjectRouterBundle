@@ -53,7 +53,7 @@ class ObjectRoute
     /**
      * @var string $lng
      *
-     * @ORM\Column(name="lng", type="string", length=5)
+     * @ORM\Column(name="lng", type="string", length=11)
      */
     private $lng;
 

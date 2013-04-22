@@ -478,12 +478,12 @@ class RoutingService {
         return $this->router->generate($route, $parameters, $absolute);
     }
     
-    public function generateDefaultUrlForSlug($locale, $slug) {
-        return $this->generateCustomUrlForSlug($this->getDefaultRoute(), $locale, $slug);
+    public function generateDefaultUrlForSlug($locale, $slug, $absolute = false) {
+        return $this->generateCustomUrlForSlug($this->getDefaultRoute(), $locale, $slug, array(), $absolute);
     }
     
-    public function generateDefaultUrlWithPageForSlug($locale, $slug, $page) {
-        return $this->generateCustomUrlForSlug($this->getDefaultRoute(), $locale, $slug, array('page' => $page));
+    public function generateDefaultUrlWithPageForSlug($locale, $slug, $page, $absolute = false) {
+        return $this->generateCustomUrlForSlug($this->getDefaultRoute(), $locale, $slug, array('page' => $page), $absolute);
     }
     
 }
