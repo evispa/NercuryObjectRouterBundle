@@ -18,10 +18,6 @@
 
 namespace Nercury\ObjectRouterBundle;
 
-use \Symfony\Bridge\Monolog\Logger;
-use \Symfony\Bundle\DoctrineBundle\Registry;
-use \Symfony\Component\Routing\Exception\RouteNotFoundException;
-
 /**
  * Used to manage redirects to objects.
  *

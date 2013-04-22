@@ -2,6 +2,7 @@ parameters:
     object_router.routing.class: Nercury\ObjectRouterBundle\RoutingService
     object_router.redirect.class: Nercury\ObjectRouterBundle\RedirectService
     object_router.generator.class: Nercury\ObjectRouterBundle\GeneratorService
+    twig.extension.object_router.class: Nercury\ObjectRouterBundle\Twig\ObjectRouteExtensions
     object_router.configuration: ~
 
 services:
@@ -24,3 +25,11 @@ services:
         calls:
           - [ setKernel, [ "@kernel" ] ]
           - [ setObjectRouter, [ "@object_router.routing" ] ]
+          
+    twig.extension.object_router:
+        class: %twig.extension.object_router.class%
+        public: false
+        tags: 
+          - { name: twig.extension }
+        calls:
+          - [ setContainer, [ "@service_container" ] ]

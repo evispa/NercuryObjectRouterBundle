@@ -26,11 +26,10 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(
  *     name="object_route", 
  *     uniqueConstraints = {
- *         @ORM\UniqueConstraint(name="slug_lang_idx", columns={"slug", "lng"})
+ *         @ORM\UniqueConstraint(name="slug_lang_idx", columns={"slug", "lng"}),
+ *         @ORM\UniqueConstraint(name="object_lang_idx", columns={"object_id", "object_type", "lng"})
  *     },
  *     indexes = {
- *         @ORM\Index(name="object_idx", columns={"object_id", "object_type"}),
- *         @ORM\Index(name="lng_idx", columns={"lng"}),
  *         @ORM\Index(name="created_idx", columns={"created_at"}),
  *         @ORM\Index(name="updated_idx", columns={"updated_at"})
  *     }
@@ -117,6 +116,7 @@ class ObjectRoute
     public function setLng($lng)
     {
         $this->lng = $lng;
+        return $this;
     }
 
     /**
@@ -137,6 +137,7 @@ class ObjectRoute
     public function setSlug($slug)
     {
         $this->slug = $slug;
+        return $this;
     }
 
     /**
@@ -157,6 +158,7 @@ class ObjectRoute
     public function setObjectType($objectType)
     {
         $this->object_type = $objectType;
+        return $this;
     }
 
     /**
@@ -177,6 +179,7 @@ class ObjectRoute
     public function setObjectId($objectId)
     {
         $this->object_id = $objectId;
+        return $this;
     }
 
     /**
@@ -197,6 +200,7 @@ class ObjectRoute
     public function setVisible($visible)
     {
         $this->visible = $visible;
+        return $this;
     }
 
     /**

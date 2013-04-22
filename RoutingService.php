@@ -18,8 +18,6 @@
 
 namespace Nercury\ObjectRouterBundle;
 
-use \Symfony\Bridge\Monolog\Logger;
-use \Symfony\Bundle\DoctrineBundle\Registry;
 use \Symfony\Component\Routing\Exception\RouteNotFoundException;
 
 /**
@@ -164,6 +162,36 @@ class RoutingService {
             return FALSE;
 
         return array($res[0]['object_id'], $res[0]['object_type'], $res[0]['visible']);
+    }
+
+    /**
+     * Get all object_router entries for given object id.
+     *
+     * @param int $objectId
+     * @param string $type
+     * @return array
+     */
+    public function getRoutesForObject($objectId = null, $type = '') {
+        if($objectId) {
+            $em = $this->getEntityManager();
+            $q = $em->createQueryBuilder()
+                ->from('ObjectRouterBundle:ObjectRoute', 'r')
+                ->andWhere('r.object_id = ?1')
+                ->andWhere('r.object_type = ?2')
+                ->select('r')
+                ->setParameter(1, $objectId)
+                ->setParameter(2, $type)
+                ->getQuery();
+
+            $res = $q->getResult();
+            if (empty($res)) {
+                return array();
+            } else {
+                return $res;
+            }
+        } else {
+            return array();
+        }
     }
 
     /**

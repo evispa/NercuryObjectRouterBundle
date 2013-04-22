@@ -44,14 +44,16 @@ class Configuration implements ConfigurationInterface
             ->scalarNode('default_route')->defaultValue('object_route')->end()
             ->scalarNode('default_route_with_page')->defaultValue('object_route_with_page')->end()
             ->arrayNode('controllers')
-                ->defaultValue(array())
+                ->defaultValue(array(
+                    'redirect' => 'ObjectRouterBundle:Load:redirectHandler'
+                ))
                 ->useAttributeAsKey('id')
                 ->prototype('scalar')
                     ->isRequired()->end()
                 ->end()
             ->end()
         ->end();
-        
+
         return $treeBuilder;
     }
 }

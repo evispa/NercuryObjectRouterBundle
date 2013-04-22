@@ -37,6 +37,11 @@ class GeneratorService {
      * @var \Symfony\Component\HttpKernel\Kernel 
      */
     protected $kernel;
+
+    /**
+     * @var RoutingService
+     */
+    protected $objectRouter;
     
     /**
      * 
@@ -87,19 +92,41 @@ class GeneratorService {
     }
         
     /**
-     * Generate ant set
-     * @param type $objectType
-     * @param type $objectId
-     * @param type $locale
-     * @param type $slug
-     * @param type $defaultVisible
-     * @return type 
+     * Generate and set
+     * @param string $objectType
+     * @param int $objectId
+     * @param string $locale
+     * @param string $slug
+     * @param boolean $defaultVisible
+     * @return string
      */
     public function setUniqueSlug($objectType, $objectId, $locale, $slug, $defaultVisible = false) {
         $slug = $this->generateUniqueSlug($objectType, $objectId, $locale, $slug);
 
         if ($slug !== false)
             $this->objectRouter->setSlug($objectType, $objectId, $locale, $slug, $defaultVisible);
+
+        return $slug;
+    }
+
+    /**
+     * Generate and set if not exists
+     * @param string $objectType
+     * @param int $objectId
+     * @param string $locale
+     * @param string $string
+     * @param boolean $defaultVisible
+     * @return string
+     */
+    public function setUniqueSlugIfNotExists($objectType, $objectId, $locale, $string, $defaultVisible = false) {
+        $slug = $this->objectRouter->getSlug($objectType, $objectId, $locale, false);
+
+        if($slug === false && $string) {
+            $slug = $this->generateUniqueSlug($objectType, $objectId, $locale, $string);
+
+            if ($slug !== false)
+                $this->objectRouter->setSlug($objectType, $objectId, $locale, $slug, $defaultVisible);
+        }
 
         return $slug;
     }
@@ -118,7 +145,7 @@ class GeneratorService {
     
     /**
      * Check if already exists
-     * TODO: Check router translations files
+     * TODO: Check router translation files
      * 
      * @param type $slug
      * @param type $locale
@@ -168,12 +195,14 @@ class GeneratorService {
     }
 
     /**
-     * 
-     * @param type $slug
-     * @param type $locale
-     * @return string|boolean 
+     *
+     * @param $objectType
+     * @param $objectId
+     * @param $locale
+     * @param $slug
+     * @return string|boolean
      */
-    private function generateUniqueSlug($objectType, $objectId, $locale, $slug) {
+    public function generateUniqueSlug($objectType, $objectId, $locale, $slug) {
         $originalSlug = $this->stringToSlug($slug);
         if (!empty($originalSlug)) {
             $slug = $originalSlug;
