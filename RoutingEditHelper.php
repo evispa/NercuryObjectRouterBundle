@@ -4,6 +4,7 @@ namespace Nercury\ObjectRouterBundle;
 
 /**
  * Used to get router entities for editing, and update entities based on updated entities.
+ * Note: a proper form type to use this is not included in this bundle (yet).
  *
  * @author nerijus
  */

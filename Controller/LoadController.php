@@ -100,7 +100,7 @@ class LoadController extends Controller
             $this->get('logger')->info('Forward to route to "'.$action.'" with id '.$id.', page '.$page.'...');
 
             $response = $this->forward($action, array(
-            '_locale' => $this->getRequest()->getLocale(),
+                '_locale' => $this->getRequest()->getLocale(),
                 'id'  => $id,
                 'page' => $page,
             ));
@@ -129,7 +129,7 @@ class LoadController extends Controller
             $this->get('logger')->info('Forward to route to "'.$action.'" with id '.$id.'...');
 
             $response = $this->forward($action, array(
-				'_locale' => $this->getRequest()->getLocale(),
+                '_locale' => $this->getRequest()->getLocale(),
                 'id'  => $id,
             ));
 

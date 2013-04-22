@@ -24,15 +24,50 @@ Recommended instalation is over Composer.
 Configuration and usage
 -----------------------
 
-To set up a route to some object (i.e. a product), add this to config.yml file::
+For upgrading to 1.2, please read upgrade notes.
+
+To set up a route to some object (i.e. a product), set up an event listener::
     
-    object_router:
-        controllers:
-            product: SomeOtherBundle:SomeOtherController:index
+     <service id="my_product.object_route_listener" class="%my_product.object_route_listener.class%">
+         <tag name="kernel.event_listener" event="object_router.get_response" method="onRouteResponseGetEvent" />
+         <!-- setters -->
+     </service>
+     
+Depending on your requirements, you can return response immediatelly (for example,
+a redirect response, not found response, etc.) or you can forward the route
+to your controller. An example for a forwarding service would look like this::
 
-"product" is understood as object type which should be routed to specified action.
+   use Nercury\ObjectRouterBundle\Event\ObjectRouteEvent;
+   
+   /**
+    * Returns a response based on object route slug
+    */
+   class ObjectRouteListener {
+   
+       /**
+        * @var \Symfony\Bundle\FrameworkBundle\HttpKernel
+        */
+       private $kernel;
+   
+       public function setKernel($kernel) {
+           $this->kernel = $kernel;
+       }
+   
+       public function onRouteResponseGetEvent(ObjectRouteEvent $event) {
+           // if the object type is "product", handle it the specified way
+           if ($event->getObjectType() == 'product') {
+               $options = $event->parameters->all();
+               $options['productId'] = $event->getObjectId();
+               $event->setResponse($this->kernel->forward('MyProductBundle:Product:view', $options));
+           }
+       }
+   
+   }
 
-To use the default object route controller, add this at the end of routing.yml::
+The string "product" is understood as object type which should be routed to specified action.
+
+To use the default object route controller to send previously mentioned event, 
+add this at the end of routing.yml::
 
     NercuryObjectRouterBundle:
     resource: "@ObjectRouterBundle/Controller/"
@@ -87,17 +122,6 @@ Custom actions can be easily used instead of the provided two. More documentatio
 Redirects
 ---------
 
-Object router features a way to manage redirects over "redirect" object. This way
-default router logic is not polluted with redirect functionality if it is not needed.
-
-To enable redirects, add this object route::
-
-    object_router:
-        controllers:
-            <...>
-            redirect: ObjectRouterBundle:Load:redirectHandler
-            <...>
-
 To create a redirect to an object::
 
     $this->get('object_router.redirect')->addRedirectToObject('product', $id, $locale, $redirectFromSlug);
@@ -105,6 +129,11 @@ To create a redirect to an object::
 Additionally redirect type can be specified (Permanent redirect is the default)::
 
     $this->get('object_router.redirect')->addRedirectToObject('product', $id, $locale, $redirectFromSlug, 301);
+
+To disable redirects, set this configuration::
+
+    object_router:
+        controllers: []
 
 Generator
 ---------
