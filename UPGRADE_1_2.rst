@@ -11,8 +11,8 @@ Additions
 * A correct locale is preserved when redirecting to route.
 * Now you can listen for a object_router.get_response event. This
   is now a prefered way to get responses from other bundles.
-* Configuration is no longer necessary if the only contains the
-  redirect route only, and all the actions are handles over events. 
+* Configuration is no longer necessary if it contains the
+  redirect route only, and all the actions are handled over events. 
   In this case it can be safely removed.
 
 Breaking changes
