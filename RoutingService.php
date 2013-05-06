@@ -64,10 +64,10 @@ class RoutingService {
     }
     
     /**
-     * @return \Doctrine\ORM\EntityManager
+     * @return \Doctrine\Common\Persistence\ObjectManager
      */
-    protected function getEntityManager() {
-        return $this->doctrine->getEntityManager();
+    protected function getManager() {
+        return $this->doctrine->getManager();
     }
     
     /**
@@ -113,8 +113,8 @@ class RoutingService {
      * @param string $slug 
      */
     public function clearResolveObjectCache($language, $slug) {
-        $em = $this->doctrine->getEntityManager();
-        $cache_impl = $em->getConfiguration()->getResultCacheImpl();
+        $om = $this->doctrine->getManager();
+        $cache_impl = $om->getConfiguration()->getResultCacheImpl();
         if ($cache_impl)
             $cache_impl->delete($this->getResolveObjectCacheId($language, $slug));
     }
@@ -128,8 +128,8 @@ class RoutingService {
      * @param boolean $only_visible 
      */
     public function clearGetSlugCache($objectType, $objectId, $language, $only_visible) {
-        $em = $this->doctrine->getEntityManager();
-        $cache_impl = $em->getConfiguration()->getResultCacheImpl();
+        $om = $this->doctrine->getManager();
+        $cache_impl = $om->getConfiguration()->getResultCacheImpl();
         if ($cache_impl)
             $cache_impl->delete($this->getGetSlugCacheId($objectType, $objectId, $language, $only_visible));
     }
@@ -143,20 +143,9 @@ class RoutingService {
      */
     public function resolveObject($language, $slug) {
         $this->logger->info('Resolve object slug ' . $slug . ' in ' . $language . ' language...');
-        $em = $this->getEntityManager();       
-        
-        $q = $em->createQueryBuilder()
-                ->from('ObjectRouterBundle:ObjectRoute', 'r')
-                ->andWhere('r.lng = ?1')
-                ->andWhere('r.slug = ?2')
-                ->select('r.object_type, r.object_id, r.visible')
-                ->setParameter(1, $language)
-                ->setParameter(2, $slug)
-                ->setMaxResults(1)
-                ->getQuery();
-
-        $q->useResultCache(true, 300, $this->getResolveObjectCacheId($language, $slug));
-        $res = $q->getArrayResult();
+        $om = $this->getManager();       
+        $cacheId = $this->getResolveObjectCacheId($language, $slug);
+        $res = $om->getRepository("ObjectRouterBundle:ObjectRoute")->resolveObject($language, $slug, $cacheId);
 
         if (empty($res))
             return FALSE;
@@ -173,17 +162,10 @@ class RoutingService {
      */
     public function getRoutesForObject($objectId = null, $type = '') {
         if($objectId) {
-            $em = $this->getEntityManager();
-            $q = $em->createQueryBuilder()
-                ->from('ObjectRouterBundle:ObjectRoute', 'r')
-                ->andWhere('r.object_id = ?1')
-                ->andWhere('r.object_type = ?2')
-                ->select('r')
-                ->setParameter(1, $objectId)
-                ->setParameter(2, $type)
-                ->getQuery();
-
-            $res = $q->getResult();
+            $om = $this->getManager();       
+        
+            $res = $om->getRepository("ObjectRouterBundle:ObjectRoute")->getRoutesForObject($objectId, $type);
+            
             if (empty($res)) {
                 return array();
             } else {
@@ -205,20 +187,9 @@ class RoutingService {
      */
     public function setSlug($objectType, $objectId, $language, $slug, $defaultVisible = false) {
         $this->logger->info('Set slug to ' . $slug . ' for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
-        $em = $this->getEntityManager();
-        $q = $em->createQueryBuilder()
-                ->from('ObjectRouterBundle:ObjectRoute', 'r')
-                ->andWhere('r.lng = ?1')
-                ->andWhere('r.object_id = ?2')
-                ->andWhere('r.object_type = ?3')
-                ->select('r')
-                ->setParameter(1, $language)
-                ->setParameter(2, $objectId)
-                ->setParameter(3, $objectType)
-                ->setMaxResults(1)
-                ->getQuery();
-                
-        $res = $q->getResult();
+        $om = $this->getManager();
+        
+        $res = $om->getRepository("ObjectRouterBundle:ObjectRoute")->getObjectRoute($objectType, $objectId, $language);
         
         if (empty($res)) {
             $route = new Entity\ObjectRoute();
@@ -226,14 +197,14 @@ class RoutingService {
             $route->setObjectId($objectId);
             $route->setObjectType($objectType);
             $route->setVisible($defaultVisible);
-            $em->persist($route);
+            $om->persist($route);
         } else {
             $route = $res[0];
         }
         
         $route->setSlug($slug);
         
-        $em->flush();
+        $om->flush();
                 
         $this->clearGetSlugCache($objectType, $objectId, $language, true);
         $this->clearGetSlugCache($objectType, $objectId, $language, false);
@@ -270,23 +241,9 @@ class RoutingService {
         }
         
         $this->logger->info('Set slug visibility to ' . ($value ? 1 : 0) . ' for object id '.$objectId.' of type '.$objectType.' in ' . ($languages === false ? 'all languages' : implode(', ', $languages).' languages') . '...');
-        $em = $this->getEntityManager();
-        $qb = $em->createQueryBuilder()
-                ->update('ObjectRouterBundle:ObjectRoute', 'r')
-                ->set('r.visible', '?1')
-                ->andWhere('r.object_id = ?2')
-                ->andWhere('r.object_type = ?3')
-                ->setParameter(1, $value)
-                ->setParameter(2, $objectId)
-                ->setParameter(3, $objectType);
+        $om = $this->getManager();
         
-        if ($languages !== false) {
-            $qb->andWhere('r.lng in (?4)');
-            $qb->setParameter(4, $languages);
-        }
-        
-        $q = $qb->getQuery();
-        $q->execute();
+        $om->getRepository("ObjectRouterBundle:ObjectRoute")->updateObjectRoute($value, $objectType, $objectId, $languages);
         
         if ($languages === false)
             $languages = $this->getRouterLanguages();
@@ -310,31 +267,12 @@ class RoutingService {
      */
     public function getSlug($objectType, $objectId, $language, $only_visible = true) {
         $this->logger->info('Get slug for object id '.$objectId.' of type '.$objectType.' in ' . $language . ' language...');
-        $em = $this->getEntityManager();
        
-        $qb = $em->createQueryBuilder()
-                ->from('ObjectRouterBundle:ObjectRoute', 'r')
-                ->andWhere('r.lng = ?1')
-                ->andWhere('r.object_id = ?2')
-                ->andWhere('r.object_type = ?3')
-                ->select('r.slug')
-                ->setParameter(1, $language)
-                ->setParameter(2, $objectId)
-                ->setParameter(3, $objectType)
-                ->setMaxResults(1);
+        $om = $this->getManager();
+        $cacheId = $this->getGetSlugCacheId($objectType, $objectId, $language, $only_visible);
+        $slug = $om->getRepository("ObjectRouterBundle:ObjectRoute")->getSlug($language, $objectId, $objectType, $only_visible, $cacheId);
         
-        if ($only_visible)
-            $qb->andWhere('r.visible = 1');
-        
-        $q = $qb->getQuery();
-
-        $q->useResultCache(true, 300, $this->getGetSlugCacheId($objectType, $objectId, $language, $only_visible));
-        $res = $q->getArrayResult();
-
-        if (empty($res))
-            return FALSE;
-        
-        return $res[0]['slug'];
+        return $slug;
     }
     
     /**
@@ -358,29 +296,21 @@ class RoutingService {
      */
     public function deleteSlugs($objectType, $objectId) {
         $this->logger->info('Delete slugs for object id '.$objectId.' of type '.$objectType.' in all languages...');
-        $em = $this->getEntityManager();
+        $om = $this->getManager();
         
-        $qb = $em->createQueryBuilder()
-                ->from('ObjectRouterBundle:ObjectRoute', 'r')
-                ->andWhere('r.object_id = ?1')
-                ->andWhere('r.object_type = ?2')
-                ->select('r')
-                ->setParameter(1, $objectId)
-                ->setParameter(2, $objectType);
+        $results = $om->getRepository("ObjectRouterBundle:ObjectRoute")->getObjectRoutesByObjectIdAndType($objectId, $objectType);
         
-        $q = $qb->getQuery();
-        $results = $q->getResult();
         if (empty($results))
             return FALSE;
         
         foreach ($results as $route) {
-            $em->remove($route);
+            $om->remove($route);
             $this->clearResolveObjectCache($route->getLng(), $route->getSlug());
             $this->clearGetSlugCache($objectType, $objectId, $route->getLng(), true);
             $this->clearGetSlugCache($objectType, $objectId, $route->getLng(), false);
         }
         
-        $em->flush();
+        $om->flush();
     }
 
     /**
@@ -395,12 +325,9 @@ class RoutingService {
         
         $slug = $this->getSlug($objectType, $objectId, $language, false);
         
-        $em = $this->getEntityManager();
-        $q = $em->createQuery('DELETE from ObjectRouterBundle:ObjectRoute r WHERE r.object_id = ?1 AND r.object_type = ?2 AND r.lng = ?3');
-        $q->setParameter(1, $objectId);
-        $q->setParameter(2, $objectType);
-        $q->setParameter(3, $language);
-        $q->execute();
+        $om = $this->getManager();
+        
+        $om->getRepository("ObjectRouterBundle:ObjectRoute")->deleteSlug($objectType, $objectId, $language);
         
         $this->clearResolveObjectCache($language, $slug);
         $this->clearGetSlugCache($objectType, $objectId, $language, true);

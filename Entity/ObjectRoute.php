@@ -34,7 +34,7 @@ use Doctrine\ORM\Mapping as ORM;
  *         @ORM\Index(name="updated_idx", columns={"updated_at"})
  *     }
  * )
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Nercury\ObjectRouterBundle\Entity\ObjectRouteRepository")
  * @ORM\HasLifecycleCallbacks()
  */
 class ObjectRoute
