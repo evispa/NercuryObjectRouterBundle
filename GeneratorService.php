@@ -85,10 +85,10 @@ class GeneratorService {
     }
 
     /**
-     * @return \Doctrine\ORM\EntityManager
+     * @return \Doctrine\Common\Persistence\ObjectManager
      */
-    protected function getEntityManager() {
-        return $this->doctrine->getEntityManager();
+    protected function getManager() {
+        return $this->doctrine->getManager();
     }
         
     /**

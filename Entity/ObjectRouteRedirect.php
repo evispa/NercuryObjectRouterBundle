@@ -31,7 +31,7 @@ use Doctrine\ORM\Mapping as ORM;
  *         @ORM\UniqueConstraint(name="unique_redirect_type_idx", columns={"object_route_id", "type"})
  *     }
  * )
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Nercury\ObjectRouterBundle\Entity\ObjectRouteRedirectRepository")
  */
 class ObjectRouteRedirect
 {
