@@ -292,9 +292,10 @@ class RoutingService {
      * 
      * @param string $objectType Object type string
      * @param integer $objectId Id of the object
+     * @param boolean $flush
      * @return boolean TRUE if something was deleted, otherwise FALSE
      */
-    public function deleteSlugs($objectType, $objectId) {
+    public function deleteSlugs($objectType, $objectId, $flush=true) {
         $this->logger->info('Delete slugs for object id '.$objectId.' of type '.$objectType.' in all languages...');
         $om = $this->getManager();
         
@@ -309,8 +310,10 @@ class RoutingService {
             $this->clearGetSlugCache($objectType, $objectId, $route->getLng(), true);
             $this->clearGetSlugCache($objectType, $objectId, $route->getLng(), false);
         }
-        
-        $om->flush();
+
+        if($flush) {
+            $om->flush();
+        }
     }
 
     /**
