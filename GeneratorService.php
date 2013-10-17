@@ -190,8 +190,13 @@ class GeneratorService {
             $string = preg_replace("#" . $key . "#i", $val, $string);
         }
 
-        $string = strtolower($string);
-        return trim(stripslashes($string));
+        $string = trim(stripslashes(strtolower($string)));
+
+        if (strlen($string) > 128) {
+            $string = substr($string, 0, 128);
+        }
+
+        return $string;
     }
 
     /**
