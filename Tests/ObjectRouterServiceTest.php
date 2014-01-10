@@ -60,7 +60,7 @@ class ObjectRouterServiceTest extends WebTestCase
     public function testResolveObject() {
         $client = $this->createClient();
         $doctrine = $this->_getDoctrine($client);
-        $em = $doctrine->getEntityManager();
+        $em = $doctrine->getManager();
         
         $route = $this->_getTestRoute($em);
         
@@ -79,7 +79,7 @@ class ObjectRouterServiceTest extends WebTestCase
     public function testSetSlug() {
         $client = $this->createClient();
         $doctrine = $this->_getDoctrine($client);
-        $em = $doctrine->getEntityManager();
+        $em = $doctrine->getManager();
         
         $route = $this->_getTestRoute($em);
         $service = $client->getContainer()->get("object_router.routing");
@@ -99,7 +99,7 @@ class ObjectRouterServiceTest extends WebTestCase
     public function testGetSlug() {
         $client = $this->createClient();
         $doctrine = $this->_getDoctrine($client);
-        $em = $doctrine->getEntityManager();
+        $em = $doctrine->getManager();
         
         $route = $this->_getTestRoute($em);
         $service = $client->getContainer()->get("object_router.routing");
@@ -117,7 +117,7 @@ class ObjectRouterServiceTest extends WebTestCase
     public function testDeleteSlugs() {
         $client = $this->createClient();
         $doctrine = $this->_getDoctrine($client);
-        $em = $doctrine->getEntityManager();
+        $em = $doctrine->getManager();
         
         $route = $this->_getTestRoute($em);
         $service = $client->getContainer()->get("object_router.routing");
@@ -144,7 +144,7 @@ class ObjectRouterServiceTest extends WebTestCase
     public function testDeleteSlug() {
         $client = $this->createClient();
         $doctrine = $this->_getDoctrine($client);
-        $em = $doctrine->getEntityManager();
+        $em = $doctrine->getManager();
         
         $route = $this->_getTestRoute($em);
         $service = $client->getContainer()->get("object_router.routing");

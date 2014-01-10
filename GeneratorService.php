@@ -6,22 +6,23 @@ use \Symfony\Bridge\Monolog\Logger;
 use \Symfony\Bundle\DoctrineBundle\Registry;
 use \Symfony\Component\Routing\Exception\RouteNotFoundException;
 
-class GeneratorService {
+class GeneratorService implements GeneratorInterface
+{
 
     /**
-     * @var \Symfony\Bridge\Monolog\Logger 
+     * @var \Symfony\Bridge\Monolog\Logger
      */
     protected $logger;
 
     /**
      *
-     * @var \Symfony\Bundle\DoctrineBundle\Registry 
+     * @var \Symfony\Bundle\DoctrineBundle\Registry
      */
     protected $doctrine;
 
     /**
      *
-     * @var \Symfony\Bundle\FrameworkBundle\Routing\Router 
+     * @var \Symfony\Bundle\FrameworkBundle\Routing\Router
      */
     protected $router;
 
@@ -34,7 +35,7 @@ class GeneratorService {
 
     /**
      *
-     * @var \Symfony\Component\HttpKernel\Kernel 
+     * @var \Symfony\Component\HttpKernel\Kernel
      */
     protected $kernel;
 
@@ -42,9 +43,9 @@ class GeneratorService {
      * @var RoutingService
      */
     protected $objectRouter;
-    
+
     /**
-     * 
+     *
      * @var array
      */
     private $translit = array(
@@ -75,7 +76,7 @@ class GeneratorService {
         $this->doctrine = $doctrine;
         $this->router = $router;
     }
-    
+
     public function setKernel($kernel) {
         $this->kernel = $kernel;
     }
@@ -90,7 +91,7 @@ class GeneratorService {
     protected function getManager() {
         return $this->doctrine->getManager();
     }
-        
+
     /**
      * Generate and set
      * @param string $objectType
@@ -130,10 +131,9 @@ class GeneratorService {
 
         return $slug;
     }
-    
+
     /**
-     * 
-     * @return type 
+     * @return type
      */
     private function getCurrentLocale() {
         if(!$this->kernel->getContainer()->isScopeActive('request')) {
@@ -142,21 +142,24 @@ class GeneratorService {
             return $this->kernel->getContainer()->get('request')->getLocale();
         }
     }
-    
+
     /**
      * Check if already exists
      * TODO: Check router translation files
-     * 
-     * @param type $slug
-     * @param type $locale
-     * @return boolean 
+     *
+     * @param $objectType
+     * @param $objectId
+     * @param $locale
+     * @param $slug
+     *
+     * @return mixed
      */
     public function slugExists($objectType, $objectId, $locale, $slug) {
         if ($locale === false)
             $locale = $this->getCurrentLocale();
-        
+
         $object = $this->objectRouter->resolveObject($locale, $slug);
-        
+
         //not exists or same object
         if($object == FALSE || ($object[0] == $objectId && $object[1] == $objectType) )
             return FALSE;
@@ -166,9 +169,9 @@ class GeneratorService {
 
     /**
      * Replace or removes all non url chars
-     * 
+     *
      * @param type $string
-     * @return type 
+     * @return type
      */
     public function stringToSlug($string) {
         $string = strtr($string, $this->translit);
@@ -223,5 +226,5 @@ class GeneratorService {
             return false;
         }
     }
-    
+
 }
