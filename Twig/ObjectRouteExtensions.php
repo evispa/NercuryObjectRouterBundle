@@ -2,22 +2,26 @@
 
 namespace Nercury\ObjectRouterBundle\Twig;
 
-class ObjectRouteExtensions extends \Twig_Extension {
+use Nercury\ObjectRouterBundle\RoutingService;
+
+class ObjectRouteExtensions extends \Twig_Extension
+{
 
     /**
-     *
-     * @var \JMS\DebuggingBundle\DependencyInjection\TraceableContainer
+     * @var RoutingService
      */
-    private $container;
+    private $routing;
 
-    public function setContainer($container) {
-        $this->container = $container;
+    function __construct($routing)
+    {
+        $this->routing = $routing;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getFunctions() {
+    public function getFunctions()
+    {
         return array(
             'object_slug_url' => new \Twig_Function_Method($this, 'getObjectSlugUrl'),
             'object_url' => new \Twig_Function_Method($this, 'getObjectUrl'),
@@ -25,25 +29,58 @@ class ObjectRouteExtensions extends \Twig_Extension {
     }
 
     /**
-     * @return \Nercury\ObjectRouterBundle\RoutingService
+     * Get absolute URL string with given slug and parameters in desired locale.
+     *
+     * @param string $locale
+     * @param string $slug
+     * @param array $params
+     *
+     * @return string|null
      */
-    private function getRouting() {
-        return $this->container->get('object_router.routing');
+    public function getObjectSlugUrl($locale, $slug, $params = array())
+    {
+        try {
+            $url = $this->routing->generateCustomUrlForSlug($this->routing->getDefaultRoute(), $locale, $slug, $params);
+        } catch (\Exception $e) {
+            $url = null;
+        }
+
+        return $url;
     }
 
-    public function getObjectSlugUrl($locale, $slug, $params = array()) {
-        $routing = $this->getRouting();
-        return $routing->generateCustomUrlForSlug($routing->getDefaultRoute(), $locale, $slug, $params);
+    /**
+     * Get URL string for $objectId of $objectType.
+     * If URL not found then NULL is returned.
+     *
+     * @param string $locale
+     * @param string $objectType
+     * @param int $objectId
+     * @param array $params
+     *
+     * @return string|null
+     */
+    public function getObjectUrl($locale, $objectType, $objectId, $params = array())
+    {
+        $slug = $this->routing->getSlug($objectType, $objectId, $locale);
+
+        if (false === $slug) {
+            return null;
+        }
+
+        try {
+            $url = $this->routing->generateCustomUrlForSlug($this->routing->getDefaultRoute(), $locale, $slug, $params);
+        } catch (\Exception $e) {
+            $url = null;
+        }
+
+        return $url;
     }
 
-    public function getObjectUrl($locale, $objectType, $objectId, $params = array()) {
-        $routing = $this->getRouting();
-        $slug = $routing->getSlug($objectType, $objectId, $locale);
-        return $routing->generateCustomUrlForSlug($routing->getDefaultRoute(), $locale, $slug, $params);
-    }
-
-    public function getName() {
+    /**
+     * @return string
+     */
+    public function getName()
+    {
         return 'object_router_extensions';
     }
-
 }
