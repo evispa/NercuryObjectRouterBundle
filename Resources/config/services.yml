@@ -28,8 +28,7 @@ services:
           
     twig.extension.object_router:
         class: %twig.extension.object_router.class%
+        arguments: [ "@object_router.routing" ]
         public: false
         tags: 
           - { name: twig.extension }
-        calls:
-          - [ setContainer, [ "@service_container" ] ]
