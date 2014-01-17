@@ -35,7 +35,7 @@ class ObjectRouteExtensions extends \Twig_Extension
      * @param string $slug
      * @param array $params
      *
-     * @return string
+     * @return string|null
      */
     public function getObjectSlugUrl($locale, $slug, $params = array())
     {
