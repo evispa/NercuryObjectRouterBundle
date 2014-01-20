@@ -18,9 +18,10 @@
 
 namespace Nercury\ObjectRouterBundle\Controller;
 
+use Nercury\ObjectRouterBundle\Event\ObjectRouteEvent;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class LoadController extends Controller
@@ -28,28 +29,36 @@ class LoadController extends Controller
     /**
      * @return \Nercury\ObjectRouterBundle\RoutingService
      */
-    private function getObjectRouter() {
+    private function getObjectRouter()
+    {
         return $this->get('object_router.routing');
     }
 
     /**
      * @return \Nercury\ObjectRouterBundle\RedirectService
      */
-    private function getRedirectService() {
+    private function getRedirectService()
+    {
         return $this->get('object_router.redirect');
     }
 
     /**
      * Helper to get action and id for slug string. Throws NotFound exceptions if slug is not found.
      *
-     * @param string $slug
+     * @param string $type
+     * @param $id
+     *
      * @return array Array of [action, id]
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    private function getActionAndId($type, $id) {
+    private function getActionAndId($type, $id)
+    {
         $action = $this->getObjectRouter()->getObjectTypeAction($type);
 
-        if ($action === false)
-            throw new NotFoundHttpException('Route with type "'.$type.'" has no assigned action to forward to.');
+        if (false === $action) {
+            throw new NotFoundHttpException('Route with type "' . $type . '" has no assigned action to forward to.');
+        }
 
         return array($action, $id);
     }
@@ -57,25 +66,31 @@ class LoadController extends Controller
     /**
      * Return object type and id, and throw exceptions if object does not exist or is not visible
      *
+     * @param Request $request
      * @param string $slug
+     *
      * @return array
-     * @throws NotFoundHttpException
+     *
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
      */
-    private function getRouterEvent($slug) {
-        $locale = $this->getRequest()->getLocale();
+    private function getRouterEvent(Request $request, $slug)
+    {
+        $locale = $request->getLocale();
         $router = $this->getObjectRouter();
         $res = $router->resolveObject($locale, $slug);
-        if ($res === false)
-            throw new NotFoundHttpException('Unable to locate a route with slug "'.$slug .'" in "'.$locale.'" locale.');
+        if (false === $res) {
+            throw new NotFoundHttpException('Unable to locate a route with slug "' . $slug . '" in "' . $locale . '" locale.');
+        }
 
         list($id, $type, $visible) = $res;
 
-        if (!$visible)
-            throw new NotFoundHttpException('Route with slug "'.$slug .'" in "'.$locale.'" locale is not available for viewing.');
+        if (!$visible) {
+            throw new NotFoundHttpException('Route with slug "' . $slug . '" in "' . $locale . '" locale is not available for viewing.');
+        }
 
-        $event = new \Nercury\ObjectRouterBundle\Event\ObjectRouteEvent($type, $id);
-        $event->setRequest($this->getRequest());
-        
+        $event = new ObjectRouteEvent($type, $id);
+        $event->setRequest($request);
+
         return $event;
     }
 
@@ -85,26 +100,24 @@ class LoadController extends Controller
      *
      * @Route("/{slug}/page-{page}", name="object_route_with_page", requirements={"slug" = ".+", "page" = "\d+"})
      */
-    public function object_with_pageAction($slug, $page)
+    public function object_with_pageAction(Request $request, $slug, $page)
     {
-        $event = $this->getRouterEvent($slug);
+        $event = $this->getRouterEvent($request, $slug);
         $event->parameters->set('page', $page);
         $this->get('event_dispatcher')->dispatch('object_router.get_response', $event);
 
         $response = $event->getResponse();
 
         if ($response === null) {
-
             list($action, $id) = $this->getActionAndId($event->getObjectType(), $event->getObjectId());
 
-            $this->get('logger')->info('Forward to route to "'.$action.'" with id '.$id.', page '.$page.'...');
+            $this->get('logger')->info('Forward to route to "' . $action . '" with id ' . $id . ', page ' . $page . '...');
 
             $response = $this->forward($action, array(
-                '_locale' => $this->getRequest()->getLocale(),
-                'id'  => $id,
+                '_locale' => $request->getLocale(),
+                'id' => $id,
                 'page' => $page,
             ));
-
         }
 
         return $response;
@@ -115,24 +128,22 @@ class LoadController extends Controller
      *
      * @Route("/{slug}", name="object_route", requirements={"slug" = ".+"})
      */
-    public function objectAction($slug)
+    public function objectAction(Request $request, $slug)
     {
-        $event = $this->getRouterEvent($slug);
+        $event = $this->getRouterEvent($request, $slug);
         $this->get('event_dispatcher')->dispatch('object_router.get_response', $event);
 
         $response = $event->getResponse();
 
         if ($response === null) {
-            
             list($action, $id) = $this->getActionAndId($event->getObjectType(), $event->getObjectId());
 
-            $this->get('logger')->info('Forward to route to "'.$action.'" with id '.$id.'...');
+            $this->get('logger')->info('Forward to route to "' . $action . '" with id ' . $id . '...');
 
             $response = $this->forward($action, array(
-                '_locale' => $this->getRequest()->getLocale(),
-                'id'  => $id,
+                '_locale' => $request->getLocale(),
+                'id' => $id,
             ));
-
         }
 
         return $response;
@@ -143,8 +154,8 @@ class LoadController extends Controller
      *
      * @param integer $id Redirect object ID
      */
-    public function redirectHandlerAction($id) {
-
+    public function redirectHandlerAction($id)
+    {
         $redirectService = $this->getRedirectService();
         $response = $redirectService->getResponseForLink($id);
 
@@ -153,6 +164,5 @@ class LoadController extends Controller
         }
 
         return $response;
-
     }
 }
