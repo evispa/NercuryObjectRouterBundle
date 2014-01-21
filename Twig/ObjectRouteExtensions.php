@@ -12,7 +12,7 @@ class ObjectRouteExtensions extends \Twig_Extension
      */
     private $routing;
 
-    function __construct($routing)
+    public function __construct($routing)
     {
         $this->routing = $routing;
     }
