@@ -1,22 +1,36 @@
 <?php
 
+/*
+ * Copyright 2012 Nerijus Arlauskas <nercury@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 namespace Nercury\ObjectRouterBundle;
 
-use \Symfony\Bridge\Monolog\Logger;
-use \Symfony\Bundle\DoctrineBundle\Registry;
-use \Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Psr\Log\LoggerInterface;
+use Symfony\Bridge\Doctrine\RegistryInterface;
 
 class GeneratorService implements GeneratorInterface
 {
-
     /**
-     * @var \Symfony\Bridge\Monolog\Logger
+     * @var LoggerInterface
      */
     protected $logger;
 
     /**
      *
-     * @var \Symfony\Bundle\DoctrineBundle\Registry
+     * @var RegistryInterface
      */
     protected $doctrine;
 
@@ -31,10 +45,10 @@ class GeneratorService implements GeneratorInterface
      * @var \Symfony\Component\HttpFoundation\Request
      */
     protected $request;
+
     protected $configuration;
 
     /**
-     *
      * @var \Symfony\Component\HttpKernel\Kernel
      */
     protected $kernel;
@@ -70,38 +84,53 @@ class GeneratorService implements GeneratorInterface
         "Ä" => "A", "Ö" => "O", "Õ" => "O", "Ü" => "U",
     );
 
-    public function __construct($configuration, $logger, $doctrine, $router) {
+    /**
+     * Constructor.
+     *
+     * @param $configuration
+     * @param $logger
+     * @param $doctrine
+     * @param $router
+     */
+    public function __construct($configuration, $logger, $doctrine, $router)
+    {
         $this->configuration = $configuration;
         $this->logger = $logger;
         $this->doctrine = $doctrine;
         $this->router = $router;
     }
 
-    public function setKernel($kernel) {
+    public function setKernel($kernel)
+    {
         $this->kernel = $kernel;
     }
 
-    public function setObjectRouter($objectRouter) {
+    public function setObjectRouter($objectRouter)
+    {
         $this->objectRouter = $objectRouter;
     }
 
     /**
      * @return \Doctrine\Common\Persistence\ObjectManager
      */
-    protected function getManager() {
+    protected function getManager()
+    {
         return $this->doctrine->getManager();
     }
 
     /**
      * Generate and set
+     *
      * @param string $objectType
      * @param int $objectId
      * @param string $locale
      * @param string $slug
      * @param boolean $defaultVisible
+     *
      * @return string
      */
-    public function setUniqueSlug($objectType, $objectId, $locale, $slug, $defaultVisible = false) {
+    public function setUniqueSlug($objectType, $objectId, $locale, $slug, $defaultVisible = false)
+    {
         $slug = $this->generateUniqueSlug($objectType, $objectId, $locale, $slug);
 
         if ($slug !== false)
@@ -112,17 +141,20 @@ class GeneratorService implements GeneratorInterface
 
     /**
      * Generate and set if not exists
+     *
      * @param string $objectType
      * @param int $objectId
      * @param string $locale
      * @param string $string
      * @param boolean $defaultVisible
+     *
      * @return string
      */
-    public function setUniqueSlugIfNotExists($objectType, $objectId, $locale, $string, $defaultVisible = false) {
+    public function setUniqueSlugIfNotExists($objectType, $objectId, $locale, $string, $defaultVisible = false)
+    {
         $slug = $this->objectRouter->getSlug($objectType, $objectId, $locale, false);
 
-        if($slug === false && $string) {
+        if ($slug === false && $string) {
             $slug = $this->generateUniqueSlug($objectType, $objectId, $locale, $string);
 
             if ($slug !== false)
@@ -135,10 +167,11 @@ class GeneratorService implements GeneratorInterface
     /**
      * @return type
      */
-    private function getCurrentLocale() {
-        if(!$this->kernel->getContainer()->isScopeActive('request')) {
+    private function getCurrentLocale()
+    {
+        if (!$this->kernel->getContainer()->isScopeActive('request')) {
             return $this->kernel->getContainer()->getParameter('locale');
-        }else{
+        } else {
             return $this->kernel->getContainer()->get('request')->getLocale();
         }
     }
@@ -154,14 +187,15 @@ class GeneratorService implements GeneratorInterface
      *
      * @return mixed
      */
-    public function slugExists($objectType, $objectId, $locale, $slug) {
+    public function slugExists($objectType, $objectId, $locale, $slug)
+    {
         if ($locale === false)
             $locale = $this->getCurrentLocale();
 
         $object = $this->objectRouter->resolveObject($locale, $slug);
 
         //not exists or same object
-        if($object == FALSE || ($object[0] == $objectId && $object[1] == $objectType) )
+        if ($object == FALSE || ($object[0] == $objectId && $object[1] == $objectType))
             return FALSE;
 
         return TRUE;
@@ -171,9 +205,11 @@ class GeneratorService implements GeneratorInterface
      * Replace or removes all non url chars
      *
      * @param type $string
+     *
      * @return type
      */
-    public function stringToSlug($string) {
+    public function stringToSlug($string)
+    {
         $string = strtr($string, $this->translit);
         $replace = '-';
 
@@ -208,9 +244,11 @@ class GeneratorService implements GeneratorInterface
      * @param $objectId
      * @param $locale
      * @param $slug
+     *
      * @return string|boolean
      */
-    public function generateUniqueSlug($objectType, $objectId, $locale, $slug) {
+    public function generateUniqueSlug($objectType, $objectId, $locale, $slug)
+    {
         $originalSlug = $this->stringToSlug($slug);
         if (!empty($originalSlug)) {
             $slug = $originalSlug;
@@ -222,9 +260,8 @@ class GeneratorService implements GeneratorInterface
             }
 
             return $slug;
-        } else {
-            return false;
         }
-    }
 
+        return false;
+    }
 }

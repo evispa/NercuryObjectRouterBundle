@@ -18,6 +18,7 @@
 
 namespace Nercury\ObjectRouterBundle\Tests;
 
+use Symfony\Bridge\Doctrine\RegistryInterface;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Nercury\ObjectRouterBundle\ObjectRouterService;
 use Nercury\ObjectRouterBundle\Entity\ObjectRoute;
@@ -25,22 +26,28 @@ use Nercury\ObjectRouterBundle\Entity\ObjectRoute;
 class ObjectRouterServiceTest extends WebTestCase
 {
     /**
-     * @return \Symfony\Bundle\DoctrineBundle\Registry 
+     * @param $client
+     *
+     * @return RegistryInterface
      */
-    private function _getDoctrine($client) {
+    private function _getDoctrine($client)
+    {
         return $client->getContainer()->get('doctrine');
     }
-    
+
     private $test_route_slug = 'dsj?ak-fhsadjkfsdk?fjds-ahj-sdjahfprtoA';
-    
+
     /**
-     * @return Nercury\ObjectRouterBundle\Entity\ObjectRoute
+     * @param $em
+     *
+     * @return \Nercury\ObjectRouterBundle\Entity\ObjectRoute
      */
-    private function _getTestRoute($em) {
+    private function _getTestRoute($em)
+    {
         $q = $em->createQuery("select r from ObjectRouterBundle:ObjectRoute r where r.slug = ?1 and r.lng = 'lt'");
         $q->setParameter(1, $this->test_route_slug);
         $results = $q->getResult();
-        
+
         if (count($results) == 0) {
             $route = new ObjectRoute();
             $route->setLng('lt');
@@ -54,71 +61,76 @@ class ObjectRouterServiceTest extends WebTestCase
         } else {
             $route = $results[0];
         }
+
         return $route;
     }
-    
-    public function testResolveObject() {
+
+    public function testResolveObject()
+    {
         $client = $this->createClient();
         $doctrine = $this->_getDoctrine($client);
         $em = $doctrine->getManager();
-        
+
         $route = $this->_getTestRoute($em);
-        
+
         $service = $client->getContainer()->get("object_router.routing");
         $object = $service->resolveObject('lt', $this->test_route_slug);
-                
+
         $this->assertNotEquals($object, false);
         $this->assertEquals($object[0], 184564); // object id
         $this->assertEquals($object[1], 'very_good_object_type'); // object type
         $this->assertEquals($object[2], 1); // visibility
-        
+
         $em->remove($route);
         $em->flush();
     }
 
-    public function testSetSlug() {
+    public function testSetSlug()
+    {
         $client = $this->createClient();
         $doctrine = $this->_getDoctrine($client);
         $em = $doctrine->getManager();
-        
+
         $route = $this->_getTestRoute($em);
         $service = $client->getContainer()->get("object_router.routing");
-        
-        $other_slug = 'other_object_slug_'.mt_rand(0, 500000);
+
+        $other_slug = 'other_object_slug_' . mt_rand(0, 500000);
         $service->setSlug('very_good_object_type', 184564, 'lt', $other_slug);
-        
+
         $object = $service->resolveObject('lt', $other_slug);
         $this->assertNotEquals($object, false);
         $this->assertEquals($object[0], 184564); // object id
         $this->assertEquals($object[1], 'very_good_object_type'); // object type
-        
+
         $em->remove($route);
         $em->flush();
     }
 
-    public function testGetSlug() {
+    public function testGetSlug()
+    {
         $client = $this->createClient();
         $doctrine = $this->_getDoctrine($client);
         $em = $doctrine->getManager();
-        
+
         $route = $this->_getTestRoute($em);
         $service = $client->getContainer()->get("object_router.routing");
-        $other_slug = 'other_object_slug_'.mt_rand(0, 500000);
+        $other_slug = 'other_object_slug_' . mt_rand(0, 500000);
         $service->setSlug('very_good_object_type', 184564, 'lt', $other_slug);
         $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
         $this->assertEquals($slug, $other_slug);
         $slug = $service->getSlug('very_good_object_type_not_existing', 8888888, 'asd');
         $this->assertEquals($slug, false);
-        
+
         $em->remove($route);
         $em->flush();
     }
 
-    public function testDeleteSlugs() {
+    public function testDeleteSlugs()
+    {
         $client = $this->createClient();
         $doctrine = $this->_getDoctrine($client);
         $em = $doctrine->getManager();
-        
+
         $route = $this->_getTestRoute($em);
         $service = $client->getContainer()->get("object_router.routing");
         $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
@@ -126,38 +138,39 @@ class ObjectRouterServiceTest extends WebTestCase
         $service->setSlug('very_good_object_type', 184564, 'en', 'miau-aaaaaa-miau');
         $slug = $service->getSlug('very_good_object_type', 184564, 'en');
         $this->assertEquals($slug, false);
-        
+
         $slug = $service->getSlug('very_good_object_type', 184564, 'en', false);
         $this->assertEquals($slug, 'miau-aaaaaa-miau');
-        
+
         $service->deleteSlugs('very_good_object_type', 184564);
-        
+
         $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
         $this->assertEquals($slug, false);
         $object = $service->resolveObject('lt', $this->test_route_slug);
         $this->assertEquals($object, false);
-        
+
         $em->remove($route);
         $em->flush();
     }
 
-    public function testDeleteSlug() {
+    public function testDeleteSlug()
+    {
         $client = $this->createClient();
         $doctrine = $this->_getDoctrine($client);
         $em = $doctrine->getManager();
-        
+
         $route = $this->_getTestRoute($em);
         $service = $client->getContainer()->get("object_router.routing");
         $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
         $this->assertEquals($slug, $this->test_route_slug);
-        
+
         $service->deleteSlug('very_good_object_type', 184564, 'lt');
-        
+
         $slug = $service->getSlug('very_good_object_type', 184564, 'lt');
         $this->assertEquals($slug, false);
         $object = $service->resolveObject('lt', $this->test_route_slug);
         $this->assertEquals($object, false);
-        
+
         $em->remove($route);
         $em->flush();
     }

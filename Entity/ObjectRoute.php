@@ -24,14 +24,14 @@ use Doctrine\ORM\Mapping as ORM;
  * Nercury\ObjectRouterBundle\Entity\ObjectRoute
  *
  * @ORM\Table(
- *     name="object_route", 
+ *     name="object_route",
  *     uniqueConstraints = {
- *         @ORM\UniqueConstraint(name="slug_lang_idx", columns={"slug", "lng"}),
- *         @ORM\UniqueConstraint(name="object_lang_idx", columns={"object_id", "object_type", "lng"})
+ * @ORM\UniqueConstraint(name="slug_lang_idx", columns={"slug", "lng"}),
+ * @ORM\UniqueConstraint(name="object_lang_idx", columns={"object_id", "object_type", "lng"})
  *     },
  *     indexes = {
- *         @ORM\Index(name="created_idx", columns={"created_at"}),
- *         @ORM\Index(name="updated_idx", columns={"updated_at"})
+ * @ORM\Index(name="created_idx", columns={"created_at"}),
+ * @ORM\Index(name="updated_idx", columns={"updated_at"})
  *     }
  * )
  * @ORM\Entity(repositoryClass="Nercury\ObjectRouterBundle\Entity\ObjectRouteRepository")
@@ -85,23 +85,40 @@ class ObjectRoute
     private $visible;
 
     /**
-     * @var datetime 
-     * 
+     * @var datetime
+     *
      * @ORM\Column(name="created_at", type="datetime")
      */
     private $created_at;
-    
+
     /**
-     * @var datetime 
-     * 
+     * @var datetime
+     *
      * @ORM\Column(name="updated_at", type="datetime")
      */
     private $updated_at;
 
     /**
+     * Constructor.
+     */
+    public function __construct()
+    {
+        $this->created_at = new \DateTime();
+        $this->updated_at = $this->created_at;
+    }
+
+    /**
+     * @ORM\PreUpdate()
+     */
+    public function preUpdate()
+    {
+        $this->updated_at = new \DateTime();
+    }
+
+    /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -112,17 +129,20 @@ class ObjectRoute
      * Set lng
      *
      * @param string $lng
+     *
+     * @return ObjectRoute
      */
     public function setLng($lng)
     {
         $this->lng = $lng;
+
         return $this;
     }
 
     /**
      * Get lng
      *
-     * @return string 
+     * @return string
      */
     public function getLng()
     {
@@ -133,17 +153,20 @@ class ObjectRoute
      * Set slug
      *
      * @param string $slug
+     *
+     * @return ObjectRoute
      */
     public function setSlug($slug)
     {
         $this->slug = $slug;
+
         return $this;
     }
 
     /**
      * Get slug
      *
-     * @return string 
+     * @return string
      */
     public function getSlug()
     {
@@ -154,17 +177,20 @@ class ObjectRoute
      * Set object_type
      *
      * @param string $objectType
+     *
+     * @return ObjectRoute
      */
     public function setObjectType($objectType)
     {
         $this->object_type = $objectType;
+
         return $this;
     }
 
     /**
      * Get object_type
      *
-     * @return string 
+     * @return string
      */
     public function getObjectType()
     {
@@ -175,17 +201,20 @@ class ObjectRoute
      * Set object_id
      *
      * @param integer $objectId
+     *
+     * @return ObjectRoute
      */
     public function setObjectId($objectId)
     {
         $this->object_id = $objectId;
+
         return $this;
     }
 
     /**
      * Get object_id
      *
-     * @return integer 
+     * @return integer
      */
     public function getObjectId()
     {
@@ -196,17 +225,20 @@ class ObjectRoute
      * Set visible
      *
      * @param boolean $visible
+     *
+     * @return ObjectRoute
      */
     public function setVisible($visible)
     {
         $this->visible = $visible;
+
         return $this;
     }
 
     /**
      * Get visible
      *
-     * @return boolean 
+     * @return boolean
      */
     public function getVisible()
     {
@@ -216,19 +248,21 @@ class ObjectRoute
     /**
      * Set created_at
      *
-     * @param datetime $createdAt
+     * @param \Datetime $createdAt
+     *
      * @return ObjectRoute
      */
     public function setCreatedAt($createdAt)
     {
         $this->created_at = $createdAt;
+
         return $this;
     }
 
     /**
      * Get created_at
      *
-     * @return datetime 
+     * @return \Datetime
      */
     public function getCreatedAt()
     {
@@ -238,7 +272,8 @@ class ObjectRoute
     /**
      * Set updated_at
      *
-     * @param datetime $updatedAt
+     * @param \Datetime $updatedAt
+     *
      * @return ObjectRoute
      */
     public function setUpdatedAt($updatedAt)
@@ -250,22 +285,10 @@ class ObjectRoute
     /**
      * Get updated_at
      *
-     * @return datetime 
+     * @return \Datetime
      */
     public function getUpdatedAt()
     {
         return $this->updated_at;
-    }
-    
-    public function __construct() {
-        $this->created_at = new \DateTime();
-        $this->updated_at = $this->created_at;
-    }
-    
-    /**
-     * @ORM\PreUpdate() 
-     */
-    public function preUpdate() {
-        $this->updated_at = new \DateTime();
     }
 }

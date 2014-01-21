@@ -22,13 +22,13 @@ use Doctrine\ORM\Mapping as ORM;
 
 /**
  * Nercury\ObjectRouterBundle\Entity\ObjectRoute
- * 
+ *
  * Object router object which handles redirects from old links.
  *
  * @ORM\Table(
- *     name="object_route_redirect", 
+ *     name="object_route_redirect",
  *     uniqueConstraints = {
- *         @ORM\UniqueConstraint(name="unique_redirect_type_idx", columns={"object_route_id", "type"})
+ * @ORM\UniqueConstraint(name="unique_redirect_type_idx", columns={"object_route_id", "type"})
  *     }
  * )
  * @ORM\Entity(repositoryClass="Nercury\ObjectRouterBundle\Entity\ObjectRouteRedirectRepository")
@@ -48,27 +48,27 @@ class ObjectRouteRedirect
      * 301 - Moved Permanently -- used when this url should no longer be used
      * 302 - Found -- redirect to another url, but still use this url for next requests
      * 303 - See Other -- url is valid, but redirect for other reasons
-     * 
+     *
      * @var integer $type
      *
      * @ORM\Column(name="type", type="integer")
      */
     private $type;
-    
-    /** 
+
+    /**
      * @var ObjectRoute
      *
      * @ORM\ManyToOne(targetEntity="ObjectRoute")
      * @ORM\JoinColumns({
-     *   @ORM\JoinColumn(name="object_route_id", referencedColumnName="id", onDelete="CASCADE")
+     * @ORM\JoinColumn(name="object_route_id", referencedColumnName="id", onDelete="CASCADE")
      * })
      */
     private $objectRoute;
-       
+
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -81,11 +81,13 @@ class ObjectRouteRedirect
      * 303 - See Other -- url is valid, but redirect for other reasons
      *
      * @param integer $type
+     *
      * @return ObjectRouteRedirect
      */
     public function setType($type)
     {
         $this->type = $type;
+
         return $this;
     }
 
@@ -94,7 +96,7 @@ class ObjectRouteRedirect
      * 302 - Found -- redirect to another url, but still use this url for next requests
      * 303 - See Other -- url is valid, but redirect for other reasons
      *
-     * @return integer 
+     * @return integer
      */
     public function getType()
     {
@@ -104,7 +106,8 @@ class ObjectRouteRedirect
     /**
      * Set objectRoute
      *
-     * @param Nercury\ObjectRouterBundle\Entity\ObjectRoute $objectRoute
+     * @param \Nercury\ObjectRouterBundle\Entity\ObjectRoute $objectRoute
+     *
      * @return ObjectRouteRedirect
      */
     public function setObjectRoute(\Nercury\ObjectRouterBundle\Entity\ObjectRoute $objectRoute = null)
@@ -116,7 +119,7 @@ class ObjectRouteRedirect
     /**
      * Get objectRoute
      *
-     * @return Nercury\ObjectRouterBundle\Entity\ObjectRoute 
+     * @return \Nercury\ObjectRouterBundle\Entity\ObjectRoute
      */
     public function getObjectRoute()
     {

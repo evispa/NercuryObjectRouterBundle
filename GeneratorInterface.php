@@ -52,7 +52,6 @@ interface GeneratorInterface
 
     /**
      * Check if already exists.
-     * TODO: Check router translation files
      *
      * @param $objectType
      * @param $objectId
