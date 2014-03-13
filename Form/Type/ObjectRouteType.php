@@ -34,10 +34,14 @@ class ObjectRouteType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->add('slug', 'text', array(
-            'label' => 'object_router.edit.slug',
-            'required' => false,
-        ));
+        $builder->add(
+            'slug',
+            'text',
+            array(
+                'label' => 'object_router.edit.slug',
+                'required' => false,
+            )
+        );
     }
 
     /**
@@ -45,13 +49,20 @@ class ObjectRouteType extends AbstractType
      */
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
-        $resolver->setDefaults(array(
-            'data_class' => '\Nercury\ObjectRouterBundle\Entity\ObjectRoute',
-        ));
+        $resolver->setDefaults(
+            array(
+                'data_class' => 'Nercury\ObjectRouterBundle\Entity\ObjectRoute',
+                'translation_domain' => 'messages',
+            )
+        );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     public function getName()
     {
         return 'object_route';
     }
 }
+
